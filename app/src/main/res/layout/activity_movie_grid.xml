@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="info.dvkr.switchmovie.ui.moviegrid.MovieGridActivity">
+
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/movieGridSwipeRefresh"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingEnd="4dp"
+        android:paddingStart="4dp">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/movieGridRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scrollbars="vertical" />
+    </android.support.v4.widget.SwipeRefreshLayout>
+</android.support.constraint.ConstraintLayout>

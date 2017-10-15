@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Switch Movie</string>
+    <string name="movie_grid_activity_name">Latest Movies</string>
+    <string name="score">Score:</string>
+    <string name="rating">Rating:</string>
+    <string name="release_date">Release Date:</string>
+</resources>
