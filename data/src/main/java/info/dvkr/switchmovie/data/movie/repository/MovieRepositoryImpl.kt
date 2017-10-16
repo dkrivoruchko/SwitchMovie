@@ -23,64 +23,57 @@ class MovieRepositoryImpl(private val apiRepository: ApiRepository,
             when (action) {
                 is MovieRepository.Action.GetMoviesOnPage -> {
                     val itemsToSkip = (action.page - 1) * MovieRepository.MOVIES_PER_PAGE
-                    val list: List<Movie>
 
                     // Checking if LocalRepository has requested data
-                    if (localRepository.getMovies().items.size > itemsToSkip) {
-                        // Have some data, return page items
-                        list = localRepository.getMovies().items
-                                .drop(itemsToSkip)
-                                .take(MovieRepository.MOVIES_PER_PAGE)
-                                .map {
-                                    Movie(it.id,
-                                            it.posterPath,
-                                            it.originalTitle,
-                                            it.overview,
-                                            it.releaseDate,
-                                            it.voteAverage)
+                    localRepository.getMovies()
+                            .observeOn(Schedulers.single())
+                            .skip(itemsToSkip.toLong())
+                            .take(MovieRepository.MOVIES_PER_PAGE.toLong())
+                            .map { Movie(it.id, it.posterPath, it.originalTitle, it.overview, it.releaseDate, it.voteAverage) }
+                            .toList() // List of Local data
+                            .flatMap { movieList ->
+                                if (!movieList.isEmpty()) { // Have Local data
+                                    Single.just(movieList)
+                                } else { // No local data, requesting from ApiRepository
+                                    apiRepository.getMovies(action.page)
+                                            .observeOn(Schedulers.single())
+                                            .map {
+                                                Movie(it.id,
+                                                        BuildConfig.BASE_IMAGE_URL + it.posterPath,
+                                                        it.originalTitle,
+                                                        it.overview,
+                                                        it.releaseDate,
+                                                        it.voteAverage)
+                                            }
+                                            .toList()
+                                            .doOnSuccess { localRepository.putMovies(it) } // Saving to Local
                                 }
-                    } else {
-                        // No local date, requesting from ApiRepository
-                        list = apiRepository.getMovies(action.page)
-                                .map {
-                                    Movie(it.id,
-                                            BuildConfig.BASE_IMAGE_URL + it.posterPath,
-                                            it.originalTitle,
-                                            it.overview,
-                                            it.releaseDate,
-                                            it.voteAverage)
-                                }
-
-                        localRepository.putMovies(list)
-                    }
-
-                    if (itemsToSkip == 0) {
-                        results.accept(MovieRepository.Result.Movies(list))
-                    } else {
-                        results.accept(MovieRepository.Result.MoviesOnPage(list))
-                    }
+                            }
+                            .subscribe(
+                                    { movieList ->
+                                        if (itemsToSkip == 0) {
+                                            results.accept(MovieRepository.Result.Movies(movieList))
+                                        } else {
+                                            results.accept(MovieRepository.Result.MoviesOnPage(movieList))
+                                        }
+                                    },
+                                    { error -> results.accept(MovieRepository.Result.Error(error)) }
+                            )
                 }
 
                 is MovieRepository.Action.GetMovieById -> {
                     // Searching for local repository
-                    val list = localRepository.getMovies().items.filter { it.id == action.id }
-                    if (list.isEmpty()) {
-                        results.accept(MovieRepository.Result.Error(NoSuchElementException("Movie not found. ID: ${action.id}")))
-                    } else if (list.size > 1) {
-                        results.accept(MovieRepository.Result.Error(IllegalStateException("More then on movie found. ID: ${action.id}")))
-                    } else {
-                        val localMovie = list.first()
-                        val movie = Movie(localMovie.id,
-                                localMovie.posterPath,
-                                localMovie.originalTitle,
-                                localMovie.overview,
-                                localMovie.releaseDate,
-                                localMovie.voteAverage)
-                        results.accept(MovieRepository.Result.MovieById(movie))
-                    }
+                    localRepository.getMovies()
+                            .observeOn(Schedulers.single())
+                            .filter { it.id == action.id }
+                            .singleOrError()
+                            .map { Movie(it.id, it.posterPath, it.originalTitle, it.overview, it.releaseDate, it.voteAverage) }
+                            .subscribe(
+                                    { movie -> results.accept(MovieRepository.Result.MovieById(movie)) },
+                                    { error -> results.accept(MovieRepository.Result.Error(IllegalStateException("Movie not found. ID: ${action.id}"))) }
+                            )
                 }
             }
-
         }
     }
 

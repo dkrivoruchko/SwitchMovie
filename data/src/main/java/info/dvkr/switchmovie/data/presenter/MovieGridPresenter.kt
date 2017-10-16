@@ -55,6 +55,11 @@ class MovieGridPresenter @Inject internal constructor(private val movieRepositor
                         it.toEvent(MovieGridView.ToEvent.OnMovieGridItemsPage(list))
                         it.toEvent(MovieGridView.ToEvent.OnRefresh(false))
                     }
+
+                    is MovieRepository.Result.Error -> {
+                        it.toEvent(MovieGridView.ToEvent.OnError(result.error))
+                        it.toEvent(MovieGridView.ToEvent.OnRefresh(false))
+                    }
                 }
             }.also { disposables.add(it) }
         }

@@ -3,6 +3,7 @@ package info.dvkr.switchmovie.ui.moviegrid
 import android.os.Bundle
 import android.support.v7.widget.StaggeredGridLayoutManager
 import android.util.Log
+import android.widget.Toast
 import com.jakewharton.rxrelay2.PublishRelay
 import info.dvkr.switchmovie.R
 import info.dvkr.switchmovie.dagger.component.NonConfigurationComponent
@@ -47,7 +48,7 @@ class MovieGridActivity : BaseActivity(), MovieGridView {
                 }
 
                 is MovieGridView.ToEvent.OnError -> {
-
+                    Toast.makeText(applicationContext, event.error.message, Toast.LENGTH_LONG).show()
                 }
             }
         }
