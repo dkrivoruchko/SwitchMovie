@@ -10,7 +10,7 @@ interface ApiService {
     data class ServerMovie(
             @SerializedName("id") val id: Int,
             @SerializedName("poster_path") val posterPath: String,
-            @SerializedName("original_title") val originalTitle: String,
+            @SerializedName("title") val title: String,
             @SerializedName("overview") val overview: String,
             @SerializedName("release_date") val releaseDate: String,
             @SerializedName("vote_average") val voteAverage: String

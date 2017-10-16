@@ -29,7 +29,7 @@ class MovieRepositoryImpl(private val apiRepository: ApiRepository,
                             .observeOn(Schedulers.single())
                             .skip(itemsToSkip.toLong())
                             .take(MovieRepository.MOVIES_PER_PAGE.toLong())
-                            .map { Movie(it.id, it.posterPath, it.originalTitle, it.overview, it.releaseDate, it.voteAverage) }
+                            .map { Movie(it.id, it.posterPath, it.title, it.overview, it.releaseDate, it.voteAverage) }
                             .toList() // List of Local data
                             .flatMap { movieList ->
                                 if (!movieList.isEmpty()) { // Have Local data
@@ -40,7 +40,7 @@ class MovieRepositoryImpl(private val apiRepository: ApiRepository,
                                             .map {
                                                 Movie(it.id,
                                                         BuildConfig.BASE_IMAGE_URL + it.posterPath,
-                                                        it.originalTitle,
+                                                        it.title,
                                                         it.overview,
                                                         it.releaseDate,
                                                         it.voteAverage)
@@ -67,7 +67,7 @@ class MovieRepositoryImpl(private val apiRepository: ApiRepository,
                             .observeOn(Schedulers.single())
                             .filter { it.id == action.id }
                             .singleOrError()
-                            .map { Movie(it.id, it.posterPath, it.originalTitle, it.overview, it.releaseDate, it.voteAverage) }
+                            .map { Movie(it.id, it.posterPath, it.title, it.overview, it.releaseDate, it.voteAverage) }
                             .subscribe(
                                     { movie -> results.accept(MovieRepository.Result.MovieById(movie)) },
                                     { error -> results.accept(MovieRepository.Result.Error(IllegalStateException("Movie not found. ID: ${action.id}"))) }

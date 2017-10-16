@@ -12,7 +12,7 @@ class LocalRepository(private val preferences: Preferences) {
         val localList = preferences.getPersistable(LocalService.LocalList.LOCAL_LIST_KEY, LocalService.LocalList())
 
         localList.items.addAll(movieList.map {
-            LocalService.LocalMovie(it.id, it.posterPath, it.originalTitle, it.overview, it.releaseDate, it.voteAverage)
+            LocalService.LocalMovie(it.id, it.posterPath, it.title, it.overview, it.releaseDate, it.voteAverage)
         })
 
         preferences.edit()

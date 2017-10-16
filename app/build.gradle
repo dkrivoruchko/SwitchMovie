@@ -47,11 +47,10 @@ dependencies {
     implementation 'com.jakewharton.rxrelay2:rxrelay:2.0.0'
 
     // Glide
-    implementation 'com.github.bumptech.glide:glide:4.2.0'
-    kapt 'com.github.bumptech.glide:compiler:4.2.0'
+    implementation 'com.github.bumptech.glide:glide:3.8.0'
 
-    // Blurry
-    implementation 'jp.wasabeef:blurry:2.1.1'
+    // Glide Transformations
+    implementation 'jp.wasabeef:glide-transformations:3.0.1'
 
     // BinaryPref
     implementation 'com.github.iamironz:binaryprefs:1.0.0-BETA-2'

@@ -5,16 +5,18 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
 import com.jakewharton.rxrelay2.PublishRelay
 import info.dvkr.switchmovie.R
 import info.dvkr.switchmovie.dagger.component.NonConfigurationComponent
-import info.dvkr.switchmovie.dagger.module.GlideApp
 import info.dvkr.switchmovie.data.presenter.MovieDetailPresenter
 import info.dvkr.switchmovie.data.view.MovieDetailView
 import info.dvkr.switchmovie.ui.BaseActivity
 import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
+import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.android.synthetic.main.activity_movie_detail.*
 import java.text.ParseException
 import java.text.SimpleDateFormat
@@ -48,11 +50,15 @@ class MovieDetailActivity : BaseActivity(), MovieDetailView {
 
             when (event) {
                 is MovieDetailView.ToEvent.OnMovie -> {
-                    title = event.movie.originalTitle
+                    title = event.movie.title
 
-                    GlideApp.with(movieDetailImage)
+                    Glide.with(applicationContext)
                             .load(event.movie.posterPath)
-                            .fitCenter()
+                            .apply(RequestOptions.bitmapTransform(BlurTransformation(20)))
+                            .into(movieDetailBackground)
+
+                    Glide.with(applicationContext)
+                            .load(event.movie.posterPath)
                             .into(movieDetailImage)
 
                     movieDetailScore.text = event.movie.voteAverage
@@ -66,7 +72,7 @@ class MovieDetailActivity : BaseActivity(), MovieDetailView {
                         toEvent(MovieDetailView.ToEvent.OnError(ex))
                     }
 
-                    movieDetailTitle.text = event.movie.originalTitle
+                    movieDetailTitle.text = event.movie.title
                     movieDetailOverview.text = event.movie.overview
                 }
 

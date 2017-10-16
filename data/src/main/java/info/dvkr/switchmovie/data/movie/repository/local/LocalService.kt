@@ -7,7 +7,7 @@ import com.ironz.binaryprefs.serialization.serializer.persistable.io.DataOutput
 interface LocalService {
     data class LocalMovie(internal var id: Int = 0,
                           internal var posterPath: String = "",
-                          internal var originalTitle: String = "",
+                          internal var title: String = "",
                           internal var overview: String = "",
                           internal var releaseDate: String = "",
                           internal var voteAverage: String = "") : Persistable {
@@ -19,7 +19,7 @@ interface LocalService {
         override fun writeExternal(dataOutput: DataOutput) {
             dataOutput.writeInt(id)
             dataOutput.writeString(posterPath)
-            dataOutput.writeString(originalTitle)
+            dataOutput.writeString(title)
             dataOutput.writeString(overview)
             dataOutput.writeString(releaseDate)
             dataOutput.writeString(voteAverage)
@@ -28,13 +28,13 @@ interface LocalService {
         override fun readExternal(dataInput: DataInput) {
             id = dataInput.readInt()
             posterPath = dataInput.readString()
-            originalTitle = dataInput.readString()
+            title = dataInput.readString()
             overview = dataInput.readString()
             releaseDate = dataInput.readString()
             voteAverage = dataInput.readString()
         }
 
-        override fun deepClone() = LocalMovie(id, posterPath, originalTitle, overview, releaseDate, voteAverage)
+        override fun deepClone() = LocalMovie(id, posterPath, title, overview, releaseDate, voteAverage)
     }
 
     data class LocalList(internal val items: MutableList<LocalMovie> = mutableListOf()) : Persistable {
