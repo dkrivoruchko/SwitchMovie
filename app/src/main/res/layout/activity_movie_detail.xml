@@ -149,5 +149,4 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/movieDetailTitle"
         tools:text="TextView" />
-
 </android.support.constraint.ConstraintLayout>

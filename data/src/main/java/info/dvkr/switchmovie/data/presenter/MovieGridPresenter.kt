@@ -16,7 +16,7 @@ class MovieGridPresenter @Inject internal constructor(private val movieRepositor
     private var movieGridActivity: MovieGridView? = null
 
     init {
-        Log.wtf("MovieGridPresenter", "Thread [${Thread.currentThread().name}] Create")
+        Log.wtf("MovieGridPresenter", "[${Thread.currentThread().name}] Create")
     }
 
     fun attach(activity: MovieGridView) {

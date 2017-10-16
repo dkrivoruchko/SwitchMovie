@@ -6,20 +6,21 @@ import io.reactivex.Observable
 
 
 interface MovieDetailView {
-    // From MovieGridView to MovieGridPresenter
+
+    // From MovieDetailView to MovieDetailPresenter
     @Keep sealed class FromEvent {
         @Keep data class GetMovieById(val id: Int) : FromEvent()
     }
 
-    // Events from MovieGridView to MovieGridPresenter
+    // Events from MovieDetailView to MovieDetailPresenter
     fun fromEvent(): Observable<FromEvent>
 
-    // From MovieGridPresenter to MovieGridView
+    // From MovieDetailPresenter to MovieDetailView
     @Keep sealed class ToEvent {
         @Keep data class OnMovie(val movie: Movie) : ToEvent()
         @Keep data class OnError(val error: Throwable) : ToEvent()
     }
 
-    // Events from MovieGridPresenter to MovieGridView
+    // Events from MovieDetailPresenter to MovieDetailView
     fun toEvent(toEvent: ToEvent)
 }

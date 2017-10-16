@@ -15,7 +15,7 @@ class MovieDetailPresenter @Inject internal constructor(private val movieReposit
     private var movieDetailActivity: MovieDetailView? = null
 
     init {
-        Log.wtf("MovieDetailPresenter", "Thread [${Thread.currentThread().name}] Create")
+        Log.wtf("MovieDetailPresenter", "[${Thread.currentThread().name}] Create")
     }
 
     fun attach(activity: MovieDetailView) {

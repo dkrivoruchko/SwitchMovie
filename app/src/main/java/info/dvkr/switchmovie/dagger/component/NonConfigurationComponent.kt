@@ -12,5 +12,4 @@ interface NonConfigurationComponent {
     fun inject(activity: MovieGridActivity)
 
     fun inject(activity: MovieDetailActivity)
-
 }
