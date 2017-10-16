@@ -1,7 +1,52 @@
-# Switch Movie Grid
-**Test task for Android developer**
+# Switch Movie Grid - Test task for Android developer
 
-Switch is preparing to pivot from helping people find jobs to helping people find movies (just kidding). We want to build an app that displays movies in a grid of thumbnails.
+### Comments from developer
+
+**Description**
+
+Application shows now playing movies.<br>
+It downloads movies data from [The Movie Database API](http://docs.themoviedb.apiary.io/#) and stores it for offline access.<br>
+If data available offline then no request send to server.<br>
+User may start/run application offline, available offline data will be shown as error message for failed server request.<br>
+Next page data loaded automaticaly as soon as user scroll to the end of the list.<br>
+Pull to refresh feature also available (it rewrite local cache data).
+
+**Please note:**
+* No local cache timeout/invalidation logic. Just store and get.
+* Information for movie rating is not available in JSON and no description in documentation found
+* Requirements for landscape layers are not provided (implemented as I see fit)
+* Error handling is very basic
+
+Application is based on Clean Architecture and MVP pattern and uses:
+* [Kotlin](https://kotlinlang.org)
+* [Android support libraries](https://developer.android.com/topic/libraries/support-library/index.html)
+* [Dagger 2](https://github.com/google/dagger)
+* [RxJava 2](https://github.com/ReactiveX/RxJava)
+* [RxRelay](https://github.com/JakeWharton/RxRelay)
+* [RxAndroid](https://github.com/ReactiveX/RxAndroid)
+* [Retrofit 2](https://github.com/square/retrofit)
+* [Glide 3](https://github.com/bumptech/glide/tree/3.0) / [Glide Transformations](https://github.com/wasabeef/glide-transformations)
+* [Binary Preferences](https://github.com/iamironz/binaryprefs)
+
+
+**Things to improve:**
+
+1. Add router to route between activities.
+1. Add some online/offline notification.
+1. Implement some cache timeout/invalidation logic.
+1. Add extended and user friendly error handling.
+1. Add additional animation between activities.
+1. Add tests.
+1. Add proguard optimization.
+
+### Screenshots
+![](screenshots/screenshot_1.jpg)&nbsp;
+![](screenshots/screenshot_2.jpg)<br>
+![](screenshots/screenshot_3.jpg)&nbsp;
+![](screenshots/screenshot_4.jpg)
+
+## Task decryption
+[Switch](https://www.switchapp.com/) is preparing to pivot from helping people find jobs to helping people find movies (just kidding). We want to build an app that displays movies in a grid of thumbnails.
 
 ![](screenshots/1.jpg)
 
