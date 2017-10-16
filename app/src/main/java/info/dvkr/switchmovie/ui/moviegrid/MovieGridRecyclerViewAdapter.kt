@@ -4,9 +4,9 @@ import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.RequestOptions.fitCenterTransform
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import info.dvkr.switchmovie.R
+import info.dvkr.switchmovie.dagger.module.GlideApp
 import info.dvkr.switchmovie.data.view.MovieGridView
 import kotlinx.android.synthetic.main.movie_item.view.*
 
@@ -45,9 +45,10 @@ internal class MovieGridRecyclerViewAdapter(private val onItemClickListener: (Mo
         fun bind(item: MovieGridView.MovieGridItem,
                  listener: (MovieGridView.MovieGridItem) -> Unit) = with(itemView) {
 
-            Glide.with(itemView)
+            GlideApp.with(itemView)
                     .load(item.posterPath)
-                    .apply(fitCenterTransform())
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .fitCenter()
                     .into(movieItemImage)
 
             movieItemHolder.setOnClickListener { listener(item) }

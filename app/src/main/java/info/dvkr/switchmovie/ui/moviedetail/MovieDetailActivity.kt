@@ -10,11 +10,10 @@ import android.renderscript.RenderScript
 import android.renderscript.ScriptIntrinsicBlur
 import android.util.Log
 import android.widget.Toast
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.RequestOptions.fitCenterTransform
 import com.jakewharton.rxrelay2.PublishRelay
 import info.dvkr.switchmovie.R
 import info.dvkr.switchmovie.dagger.component.NonConfigurationComponent
+import info.dvkr.switchmovie.dagger.module.GlideApp
 import info.dvkr.switchmovie.data.presenter.MovieDetailPresenter
 import info.dvkr.switchmovie.data.view.MovieDetailView
 import info.dvkr.switchmovie.ui.BaseActivity
@@ -66,9 +65,9 @@ class MovieDetailActivity : BaseActivity(), MovieDetailView {
 
                     title = event.movie.originalTitle
 
-                    Glide.with(movieDetailImage)
+                    GlideApp.with(movieDetailImage)
                             .load(event.movie.posterPath)
-                            .apply(fitCenterTransform())
+                            .fitCenter()
                             .into(movieDetailImage)
 
                     movieDetailScore.text = event.movie.voteAverage
