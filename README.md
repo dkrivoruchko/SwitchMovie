@@ -7,15 +7,18 @@
 Application shows now playing movies.<br>
 It downloads movies data from [The Movie Database API](http://docs.themoviedb.apiary.io/#) and stores it for offline access.<br>
 If data available offline then no request send to server.<br>
-User may start/run application offline, available offline data will be shown as error message for failed server request.<br>
-Next page data loaded automaticaly as soon as user scroll to the end of the list.<br>
-Pull to refresh feature also available (it rewrite local cache data).
+User may start/run application offline, available offline data will be shown or error message for failed server request.<br>
+Next page data loaded automatically as soon as user scroll to the end of the list.<br>
+Pull to refresh feature also available (it rewrite local cache data).<br>
+Basic loading animation implemented.
 
 **Please note:**
+* Original task screenshots are from Apple device and are not relevant for android.
 * No local cache timeout/invalidation logic. Just store and get.
-* Information for movie rating is not available in JSON and no description in documentation found
-* Requirements for landscape layers are not provided (implemented as I see fit)
-* Error handling is very basic
+* Information for movie rating is not available in JSON and no description in documentation found.
+* Requirements for landscape layouts are not provided (implemented as I see fit).
+* No loading animation for image loading.
+* Error handling is very basic.
 
 Application is based on Clean Architecture and MVP pattern and uses:
 * [Kotlin](https://kotlinlang.org)
@@ -29,10 +32,11 @@ Application is based on Clean Architecture and MVP pattern and uses:
 * [Binary Preferences](https://github.com/iamironz/binaryprefs)
 
 
-**Things to improve:**
+**Possible things to improve:**
 
 1. Add router to route between activities.
 1. Add some online/offline notification.
+1. Add loading animation for image loading.
 1. Implement some cache timeout/invalidation logic.
 1. Add extended and user friendly error handling.
 1. Add additional animation between activities.
@@ -45,7 +49,7 @@ Application is based on Clean Architecture and MVP pattern and uses:
 ![](screenshots/screenshot_3.jpg)&nbsp;
 ![](screenshots/screenshot_4.jpg)
 
-## Task decryption
+# Original task decryption
 [Switch](https://www.switchapp.com/) is preparing to pivot from helping people find jobs to helping people find movies (just kidding). We want to build an app that displays movies in a grid of thumbnails.
 
 ![](screenshots/1.jpg)
