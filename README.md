@@ -3,7 +3,7 @@
 
 Switch is preparing to pivot from helping people find jobs to helping people find movies (just kidding). We want to build an app that displays movies in a grid of thumbnails.
 
-![](screenshots\1.jpg)
+![](screenshots/1.jpg)
 
 ### The Movie Database API
 
@@ -85,7 +85,7 @@ You should load an initial set of movie data for 20 movies, display those in a g
 
 You should also implement a detail view that displays a detail view when a user taps on a poster in the grid with a back arrow to return to the grid view.
 
-![](screenshots\2.jpg)
+![](screenshots/2.jpg)
 
 Support landscape and portrait orientation
 
@@ -102,7 +102,7 @@ Use any technology you prefer, try to show skills at making good app architectur
 ```
 The MIT License (MIT)
 
-Copyright (c) 2016 Dmitriy Krivoruchko
+Copyright (c) 2017 Dmitriy Krivoruchko
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
