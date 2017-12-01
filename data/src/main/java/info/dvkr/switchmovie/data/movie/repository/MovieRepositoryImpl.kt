@@ -1,81 +1,75 @@
 package info.dvkr.switchmovie.data.movie.repository
 
-import android.util.Log
-import com.jakewharton.rxrelay2.PublishRelay
-import info.dvkr.switchmovie.data.movie.repository.api.ApiRepository
-import info.dvkr.switchmovie.data.movie.repository.local.LocalRepository
-import info.dvkr.switchmovie.domain.BuildConfig
-import info.dvkr.switchmovie.domain.model.Movie
+import info.dvkr.switchmovie.data.movie.repository.api.MovieApiService
+import info.dvkr.switchmovie.data.movie.repository.local.MovieLocalService
 import info.dvkr.switchmovie.domain.repository.MovieRepository
-import io.reactivex.Observable
-import io.reactivex.Single
-import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.experimental.CoroutineExceptionHandler
+import kotlinx.coroutines.experimental.ThreadPoolDispatcher
+import kotlinx.coroutines.experimental.channels.ActorJob
+import kotlinx.coroutines.experimental.channels.Channel
+import kotlinx.coroutines.experimental.channels.ConflatedBroadcastChannel
+import kotlinx.coroutines.experimental.channels.actor
+import timber.log.Timber
 
-class MovieRepositoryImpl(private val apiRepository: ApiRepository,
-                          private val localRepository: LocalRepository) : MovieRepository {
+class MovieRepositoryImpl(private val repositoryContext: ThreadPoolDispatcher,
+                          private val movieApiService: MovieApiService,
+                          private val movieLocalService: MovieLocalService) : MovieRepository {
 
-    private val results = PublishRelay.create<MovieRepository.Result>()
+    private val actorJob: ActorJob<MovieRepository.Action>
+    private val broadcastChannel = ConflatedBroadcastChannel<MovieRepository.Result>()
 
-    override fun actions(action: MovieRepository.Action) {
-        Single.just(action).subscribeOn(Schedulers.single()).subscribe { action ->
-            Log.wtf("MovieRepositoryImpl", "[${Thread.currentThread().name}] action: $action")
+    init {
+        actorJob = actor(repositoryContext +
+                CoroutineExceptionHandler { _, throwable ->
+                    broadcastChannel.offer(MovieRepository.Result.Error(throwable))
+                    Timber.e("[${this.javaClass.simpleName}#${this.hashCode()}@${Thread.currentThread().name}] error: $throwable")
+                }, Channel.UNLIMITED) {
+            for (action in this) {
+                Timber.d("[${this.javaClass.simpleName}#${this.hashCode()}@${Thread.currentThread().name}] action: $action")
 
-            when (action) {
-                is MovieRepository.Action.GetMoviesOnPage -> {
-                    val itemsToSkip = (action.page - 1) * MovieRepository.MOVIES_PER_PAGE
+                when (action) {
+                    is MovieRepository.Action.GetMoviesOnPage -> {
+                        val itemsToSkip = (action.page - 1) * MovieRepository.MOVIES_PER_PAGE
 
-                    // Checking if LocalRepository has requested data
-                    localRepository.getMovies()
-                            .observeOn(Schedulers.single())
-                            .skip(itemsToSkip.toLong())
-                            .take(MovieRepository.MOVIES_PER_PAGE.toLong())
-                            .map { Movie(it.id, it.posterPath, it.title, it.overview, it.releaseDate, it.voteAverage) }
-                            .toList() // List of Local data
-                            .flatMap { movieList ->
-                                if (!movieList.isEmpty()) { // Have Local data
-                                    Single.just(movieList)
-                                } else { // No local data, requesting from ApiRepository
-                                    apiRepository.getMovies(action.page)
-                                            .observeOn(Schedulers.single())
-                                            .map {
-                                                Movie(it.id,
-                                                        BuildConfig.BASE_IMAGE_URL + it.posterPath,
-                                                        it.title,
-                                                        it.overview,
-                                                        it.releaseDate,
-                                                        it.voteAverage)
-                                            }
-                                            .toList()
-                                            .doOnSuccess { localRepository.putMovies(it) } // Saving to Local
+                        // Checking for local data
+                        movieLocalService.getMovies().asSequence()
+                                .drop(itemsToSkip)
+                                .take(MovieRepository.MOVIES_PER_PAGE)
+                                .toList()
+                                .let {
+                                    if (it.isNotEmpty()) { // Have Local data
+                                        return@let it
+                                    } else { // No Local data.
+                                        movieApiService.getMovies(action.page)
+                                                .also { movieLocalService.putMovies(it) }
+                                    }
                                 }
-                            }
-                            .subscribe(
-                                    { movieList ->
-                                        if (itemsToSkip == 0) {
-                                            results.accept(MovieRepository.Result.Movies(movieList))
-                                        } else {
-                                            results.accept(MovieRepository.Result.MoviesOnPage(movieList))
-                                        }
-                                    },
-                                    { error -> results.accept(MovieRepository.Result.Error(error)) }
-                            )
+                                .apply {
+                                    if (itemsToSkip == 0) {
+                                        broadcastChannel.send(MovieRepository.Result.Movies(this))
+                                    } else {
+                                        broadcastChannel.send(MovieRepository.Result.MoviesOnPage(this))
+                                    }
+                                }
+                    }
+
+                    is MovieRepository.Action.GetMovieById -> {
+                        // Searching for local repository
+                        movieLocalService.getMovies().asSequence()
+                                .filter { it.id == action.id }
+                                .first()
+                                .let { broadcastChannel.send(MovieRepository.Result.MovieById(it)) }
+//  { error -> broadcastChannel.send(MovieRepository.Result.Error(IllegalStateException("Movie not found. ID: ${action.id}"))) }
+                    }
                 }
 
-                is MovieRepository.Action.GetMovieById -> {
-                    // Searching for local repository
-                    localRepository.getMovies()
-                            .observeOn(Schedulers.single())
-                            .filter { it.id == action.id }
-                            .singleOrError()
-                            .map { Movie(it.id, it.posterPath, it.title, it.overview, it.releaseDate, it.voteAverage) }
-                            .subscribe(
-                                    { movie -> results.accept(MovieRepository.Result.MovieById(movie)) },
-                                    { error -> results.accept(MovieRepository.Result.Error(IllegalStateException("Movie not found. ID: ${action.id}"))) }
-                            )
-                }
             }
         }
+
     }
 
-    override fun results(): Observable<MovieRepository.Result> = results
+    override fun offer(action: MovieRepository.Action): Boolean = actorJob.offer(action)
+
+    override fun subscribe() = broadcastChannel.openSubscription()
+
 }

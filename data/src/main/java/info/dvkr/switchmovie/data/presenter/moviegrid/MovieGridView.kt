@@ -1,7 +1,6 @@
-package info.dvkr.switchmovie.data.view
+package info.dvkr.switchmovie.data.presenter.moviegrid
 
 import android.support.annotation.Keep
-import io.reactivex.Observable
 
 interface MovieGridView {
 
@@ -9,12 +8,9 @@ interface MovieGridView {
 
     // From MovieGridView to MovieGridPresenter
     @Keep sealed class FromEvent {
-        @Keep class RefreshItems : FromEvent()
+        @Keep object RefreshItems : FromEvent()
         @Keep data class GetPage(val page: Int) : FromEvent()
     }
-
-    // Events from MovieGridView to MovieGridPresenter
-    fun fromEvent(): Observable<FromEvent>
 
     // From MovieGridPresenter to MovieGridView
     @Keep sealed class ToEvent {

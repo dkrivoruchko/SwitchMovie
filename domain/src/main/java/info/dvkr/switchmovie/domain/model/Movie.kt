@@ -7,4 +7,7 @@ data class Movie(val id: Int,
                  val overview: String,
                  val releaseDate: String,
                  val voteAverage: String
-)
+
+) {
+    override fun toString() = "Movie(id=$id)"
+}

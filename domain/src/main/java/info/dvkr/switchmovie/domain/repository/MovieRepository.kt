@@ -2,7 +2,7 @@ package info.dvkr.switchmovie.domain.repository
 
 import android.support.annotation.Keep
 import info.dvkr.switchmovie.domain.model.Movie
-import io.reactivex.Observable
+import kotlinx.coroutines.experimental.channels.SubscriptionReceiveChannel
 
 
 interface MovieRepository {
@@ -18,7 +18,7 @@ interface MovieRepository {
     }
 
     // Events from Presenters to MovieRepository
-    fun actions(action: Action)
+    fun offer(action: MovieRepository.Action): Boolean
 
     // From MovieRepository to Presenters
     @Keep sealed class Result {
@@ -29,5 +29,5 @@ interface MovieRepository {
     }
 
     // Events from MovieRepository to Presenters
-    fun results(): Observable<Result>
+    fun subscribe(): SubscriptionReceiveChannel<Result>
 }

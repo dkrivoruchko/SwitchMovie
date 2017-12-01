@@ -1,8 +1,7 @@
-package info.dvkr.switchmovie.data.view
+package info.dvkr.switchmovie.data.presenter.moviedetail
 
 import android.support.annotation.Keep
 import info.dvkr.switchmovie.domain.model.Movie
-import io.reactivex.Observable
 
 
 interface MovieDetailView {
@@ -11,9 +10,6 @@ interface MovieDetailView {
     @Keep sealed class FromEvent {
         @Keep data class GetMovieById(val id: Int) : FromEvent()
     }
-
-    // Events from MovieDetailView to MovieDetailPresenter
-    fun fromEvent(): Observable<FromEvent>
 
     // From MovieDetailPresenter to MovieDetailView
     @Keep sealed class ToEvent {

@@ -2,27 +2,20 @@ package info.dvkr.switchmovie.ui
 
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-
-import info.dvkr.switchmovie.MovieGridApp
-import info.dvkr.switchmovie.dagger.component.NonConfigurationComponent
+import info.dvkr.switchmovie.data.presenter.PresenterFactory
+import org.koin.android.ext.android.inject
+import timber.log.Timber
 
 abstract class BaseActivity : AppCompatActivity() {
-    private lateinit var injector: NonConfigurationComponent
+    protected val presenterFactory: PresenterFactory by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        val savedInjector = lastCustomNonConfigurationInstance
-        injector = if (null == savedInjector) {
-            (application as MovieGridApp).appComponent().plusActivityComponent()
-        } else {
-            savedInjector as NonConfigurationComponent
-        }
-
-        inject(injector)
+        Timber.i("[${this.javaClass.simpleName}#${this.hashCode()}@${Thread.currentThread().name}] onCreate")
     }
 
-    abstract fun inject(injector: NonConfigurationComponent)
-
-    override fun onRetainCustomNonConfigurationInstance(): Any = injector
+    override fun onDestroy() {
+        Timber.i("[${this.javaClass.simpleName}#${this.hashCode()}@${Thread.currentThread().name}] onDestroy")
+        super.onDestroy()
+    }
 }

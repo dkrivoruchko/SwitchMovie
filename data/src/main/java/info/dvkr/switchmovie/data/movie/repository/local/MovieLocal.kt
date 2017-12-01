@@ -4,7 +4,7 @@ import com.ironz.binaryprefs.serialization.serializer.persistable.Persistable
 import com.ironz.binaryprefs.serialization.serializer.persistable.io.DataInput
 import com.ironz.binaryprefs.serialization.serializer.persistable.io.DataOutput
 
-interface LocalService {
+object MovieLocal {
     data class LocalMovie(internal var id: Int = 0,
                           internal var posterPath: String = "",
                           internal var title: String = "",
@@ -35,34 +35,26 @@ interface LocalService {
         }
 
         override fun deepClone() = LocalMovie(id, posterPath, title, overview, releaseDate, voteAverage)
+
+        override fun toString() = "LocalMovie(id=$id)"
     }
 
-    data class LocalList(internal val items: MutableList<LocalMovie> = mutableListOf()) : Persistable {
+    data class LocalList(internal var items: List<LocalMovie> = emptyList()) : Persistable {
 
         companion object {
             const val LOCAL_LIST_KEY = "LOCAL_LIST_KEY"
         }
 
         override fun writeExternal(dataOutput: DataOutput) {
-            val size = items.size
-            dataOutput.writeInt(size)
-            items.forEach { writeExternal(dataOutput) }
+            dataOutput.writeInt(items.size)
+            items.forEach { it.writeExternal(dataOutput) }
         }
 
         override fun readExternal(dataInput: DataInput) {
             val size = dataInput.readInt()
-            for (i in 0..size) {
-                items.add(LocalMovie().apply { readExternal(dataInput) })
-            }
-
+            items = (0 until size).map { LocalMovie().apply { readExternal(dataInput) } }
         }
 
-        override fun deepClone(): LocalList {
-            val newLocalList = LocalList()
-            items.forEach {
-                newLocalList.items.add(it.deepClone())
-            }
-            return newLocalList
-        }
+        override fun deepClone() = LocalList(items.map { it.deepClone() })
     }
 }

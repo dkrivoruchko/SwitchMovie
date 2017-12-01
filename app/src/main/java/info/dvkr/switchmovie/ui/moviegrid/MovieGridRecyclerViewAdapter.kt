@@ -6,7 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import com.bumptech.glide.Glide
 import info.dvkr.switchmovie.R
-import info.dvkr.switchmovie.data.view.MovieGridView
+import info.dvkr.switchmovie.data.presenter.moviegrid.MovieGridView
 import kotlinx.android.synthetic.main.movie_item.view.*
 
 
@@ -14,7 +14,7 @@ internal class MovieGridRecyclerViewAdapter(private val onItemClickListener: (Mo
                                             private val onBottomReachedListener: () -> Unit) :
         RecyclerView.Adapter<MovieGridRecyclerViewAdapter.ViewHolder>() {
 
-    private var movieList: MutableList<MovieGridView.MovieGridItem> = mutableListOf<MovieGridView.MovieGridItem>()
+    private var movieList: MutableList<MovieGridView.MovieGridItem> = mutableListOf()
 
     internal fun setMovieList(newMovieList: List<MovieGridView.MovieGridItem>) {
         movieList = newMovieList.toMutableList()
