@@ -26,6 +26,8 @@ object MovieApi {
             @Json(name = "results") var items: List<ServerMovie>
     )
 
+    const val MOVIES_PER_PAGE = 20
+
     interface Service {
         @GET("movie/now_playing")
         fun getNowPlaying(@Query("api_key") apiKey: String,

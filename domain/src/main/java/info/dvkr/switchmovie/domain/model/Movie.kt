@@ -6,7 +6,8 @@ data class Movie(val id: Int,
                  val title: String,
                  val overview: String,
                  val releaseDate: String,
-                 val voteAverage: String
+                 val voteAverage: String,
+                 val isStar: Boolean
 
 ) {
     override fun toString() = "Movie(id=$id)"

@@ -10,7 +10,8 @@ object MovieLocal {
                           internal var title: String = "",
                           internal var overview: String = "",
                           internal var releaseDate: String = "",
-                          internal var voteAverage: String = "") : Persistable {
+                          internal var voteAverage: String = "",
+                          internal var isStar: Boolean = false) : Persistable {
 
         companion object {
             const val LOCAL_MOVIE_KEY = "LOCAL_MOVIE_KEY"
@@ -23,6 +24,7 @@ object MovieLocal {
             dataOutput.writeString(overview)
             dataOutput.writeString(releaseDate)
             dataOutput.writeString(voteAverage)
+            dataOutput.writeBoolean(isStar)
         }
 
         override fun readExternal(dataInput: DataInput) {
@@ -32,9 +34,10 @@ object MovieLocal {
             overview = dataInput.readString()
             releaseDate = dataInput.readString()
             voteAverage = dataInput.readString()
+            isStar = dataInput.readBoolean()
         }
 
-        override fun deepClone() = LocalMovie(id, posterPath, title, overview, releaseDate, voteAverage)
+        override fun deepClone() = LocalMovie(id, posterPath, title, overview, releaseDate, voteAverage, isStar)
 
         override fun toString() = "LocalMovie(id=$id)"
     }
