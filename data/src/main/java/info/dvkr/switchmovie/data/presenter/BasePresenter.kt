@@ -1,14 +1,12 @@
 package info.dvkr.switchmovie.data.presenter
 
 import android.arch.lifecycle.ViewModel
-import kotlinx.coroutines.experimental.Job
 import kotlinx.coroutines.experimental.channels.ActorJob
 import timber.log.Timber
 
 open class BasePresenter<T, R> : ViewModel() {
 
     protected lateinit var actor: ActorJob<R>
-    protected lateinit var job: Job
     protected var view: T? = null
 
     init {
@@ -30,7 +28,6 @@ open class BasePresenter<T, R> : ViewModel() {
 
     override fun onCleared() {
         actor.channel.close()
-        job.cancel()
         super.onCleared()
     }
 }

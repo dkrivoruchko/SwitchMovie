@@ -21,6 +21,7 @@ interface MovieGridView {
         @Keep data class OnRefresh(val isRefreshing: Boolean) : ToEvent()
         @Keep data class OnMovieGridItemsRange(val range: Pair<Int, Int>, val list: List<MovieGridItem>) : ToEvent()
         @Keep data class OnMovie(val movie: Movie) : ToEvent()
+        @Keep data class OnStarMovieById(val id: Int) : ToEvent()
         @Keep data class OnError(val error: Throwable) : ToEvent()
     }
 

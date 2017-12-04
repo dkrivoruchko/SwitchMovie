@@ -11,33 +11,17 @@ import info.dvkr.switchmovie.data.settings.SettingsImpl
 import info.dvkr.switchmovie.domain.BuildConfig
 import info.dvkr.switchmovie.domain.repository.MovieRepository
 import info.dvkr.switchmovie.domain.settings.Settings
-import kotlinx.coroutines.experimental.ThreadPoolDispatcher
-import kotlinx.coroutines.experimental.newSingleThreadContext
 import org.koin.android.module.AndroidModule
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import timber.log.Timber
+import java.util.concurrent.Executors
 
 
 class KoinModule : AndroidModule() {
-    companion object {
-        const val PRESENTER_CONTEXT = "PresenterActorContext"
-        const val REPOSITORY_CONTEXT = "RepositoryActorContext"
-        const val LOCAL_SERVICE_CONTEXT = "LocalServiceContext"
-        const val API_SERVICE_CONTEXT = "ApiServiceContext"
-    }
-
     override fun context() = applicationContext {
 
-        provide(PRESENTER_CONTEXT) { newSingleThreadContext(PRESENTER_CONTEXT) } bind (ThreadPoolDispatcher::class)
-
-        provide(REPOSITORY_CONTEXT) { newSingleThreadContext(REPOSITORY_CONTEXT) } bind (ThreadPoolDispatcher::class)
-
-        provide(LOCAL_SERVICE_CONTEXT) { newSingleThreadContext(LOCAL_SERVICE_CONTEXT) } bind (ThreadPoolDispatcher::class)
-
-        provide(API_SERVICE_CONTEXT) { newSingleThreadContext(API_SERVICE_CONTEXT) } bind (ThreadPoolDispatcher::class)
-
-        provide { PresenterFactory(get(PRESENTER_CONTEXT), get()) } bind (PresenterFactory::class)
+        provide { PresenterFactory(get()) } bind (PresenterFactory::class)
 
         provide {
             SettingsImpl(
@@ -52,14 +36,15 @@ class KoinModule : AndroidModule() {
             Retrofit.Builder()
                     .baseUrl(BuildConfig.BASE_API_URL)
                     .addConverterFactory(MoshiConverterFactory.create())
+                    .callbackExecutor(Executors.newSingleThreadExecutor())
                     .build()
                     .create(MovieApi.Service::class.java)
         } bind (MovieApi.Service::class)
 
-        provide { MovieApiService(get(API_SERVICE_CONTEXT), get(), BuildConfig.API_KEY) }
+        provide { MovieApiService(get(), BuildConfig.API_KEY) }
 
         provide {
-            MovieLocalService(get(LOCAL_SERVICE_CONTEXT),
+            MovieLocalService(
                     BinaryPreferencesBuilder(androidApplication)
                             .name("AppCache")
                             .registerPersistable(MovieLocal.LocalMovie.LOCAL_MOVIE_KEY, MovieLocal.LocalMovie::class.java)
@@ -69,6 +54,6 @@ class KoinModule : AndroidModule() {
             )
         } bind (MovieLocalService::class)
 
-        provide { MovieRepositoryImpl(get(REPOSITORY_CONTEXT), get(), get()) } bind (MovieRepository::class)
+        provide { MovieRepositoryImpl(get(), get()) } bind (MovieRepository::class)
     }
 }

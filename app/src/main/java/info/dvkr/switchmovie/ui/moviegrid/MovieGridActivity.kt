@@ -1,7 +1,9 @@
 package info.dvkr.switchmovie.ui.moviegrid
 
 import android.arch.lifecycle.ViewModelProviders
+import android.content.res.ColorStateList
 import android.os.Bundle
+import android.support.v4.content.ContextCompat
 import android.support.v7.widget.StaggeredGridLayoutManager
 import android.widget.Toast
 import com.bumptech.glide.Glide
@@ -81,6 +83,17 @@ class MovieGridActivity : BaseActivity(), MovieGridView {
 
                     movieDetailTitle.text = toEvent.movie.title
                     movieDetailOverview.text = toEvent.movie.overview
+
+                    if (toEvent.movie.isStar)
+                        movieDetailStar.imageTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.colorAccent))
+                    else
+                        movieDetailStar.imageTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.colorWhite))
+                }
+
+                is MovieGridView.ToEvent.OnStarMovieById -> {
+                    if (selectedMovieId == toEvent.id) {
+                        presenter.offer(MovieGridView.FromEvent.GetMovieById(toEvent.id))
+                    }
                 }
 
                 is MovieGridView.ToEvent.OnError -> {
@@ -115,13 +128,19 @@ class MovieGridActivity : BaseActivity(), MovieGridView {
 
         presenter.attach(this)
 
-        if (savedInstanceState == null) {
-            presenter.offer(MovieGridView.FromEvent.GetCache)
-            presenter.offer(MovieGridView.FromEvent.RefreshItems)
-        } else {
-            selectedMovieId = savedInstanceState.getInt(SELECTED_MOVIE_ID)
-            presenter.offer(MovieGridView.FromEvent.GetCache)
-        }
+//        if (savedInstanceState == null) {
+//            presenter.offer(MovieGridView.FromEvent.GetCache)
+//            presenter.offer(MovieGridView.FromEvent.RefreshItems)
+//        } else {
+//            selectedMovieId = savedInstanceState.getInt(SELECTED_MOVIE_ID)
+//            presenter.offer(MovieGridView.FromEvent.GetCache)
+//        }
+
+        presenter.offer(MovieGridView.FromEvent.RefreshItems)
+
+        selectedMovieId = savedInstanceState?.getInt(SELECTED_MOVIE_ID) ?: -1
+        if (selectedMovieId > 0)
+            presenter.offer(MovieGridView.FromEvent.GetMovieById(selectedMovieId))
     }
 
     override fun onSaveInstanceState(outState: Bundle?) {
