@@ -17,76 +17,76 @@ import timber.log.Timber
 class MovieRepositoryImpl(private val movieApiService: MovieApiService,
                           private val movieLocalService: MovieLocalService) : MovieRepository {
 
-    private val actorJob: ActorJob<MovieRepository.Request>
-    private val movieMutex = Mutex()
+  private val actorJob: ActorJob<MovieRepository.Request>
+  private val movieMutex = Mutex()
 
-    init {
-        actorJob = actor(CommonPool, Channel.UNLIMITED) {
-            for (request in channel) {
-                Timber.d("[${this.javaClass.simpleName}#${this.hashCode()}@${Thread.currentThread().name}] request: $request")
+  init {
+    actorJob = actor(CommonPool, Channel.UNLIMITED) {
+      for (request in channel) {
+        Timber.d("[${this.javaClass.simpleName}#${this.hashCode()}@${Thread.currentThread().name}] request: $request")
 
-                when (request) {
-                    is MovieRepository.Request.GetMoviesFromIndex -> async(coroutineContext) {
-                        movieMutex.withLock {
-                            val pages: Int = request.from / MovieApi.MOVIES_PER_PAGE
+        when (request) {
+          is MovieRepository.Request.GetMoviesFromIndex -> async(coroutineContext) {
+            movieMutex.withLock {
+              val pages: Int = request.from / MovieApi.MOVIES_PER_PAGE
 
-                            // Checking for local data
-                            movieLocalService.getMovies().asSequence()
-                                    .drop(pages * MovieApi.MOVIES_PER_PAGE)
-                                    .take(MovieApi.MOVIES_PER_PAGE)
-                                    .toList()
-                                    .run {
-                                        if (this.isNotEmpty()) this // Have Local data
-                                        else  // No Local data.
-                                            try {
-                                                movieApiService.getMovies(pages + 1)
-                                                        .also { movieLocalService.addMovies(it) }
-                                            } catch (t: Throwable) {
-                                                request.response.completeExceptionally(t)
-                                                return@async
-                                            }
-                                    }
-                                    .apply {
-                                        val from = pages * MovieApi.MOVIES_PER_PAGE
-                                        val range = Pair(from, from + this.size)
-                                        request.response.complete(MovieRepository.MoviesOnRange(range, this))
-                                    }
-                        }
-                    }
-
-                    is MovieRepository.Request.GetMovieById -> async(coroutineContext) {
-                        movieMutex.withLock {
-                            movieLocalService.getMovies().asSequence()
-                                    .filter { it.id == request.id }
-                                    .firstOrNull()
-                                    .apply {
-                                        if (this == null) request.response.completeExceptionally(IllegalArgumentException("Movie not found"))
-                                        else request.response.complete(this)
-                                    }
-                        }
-                    }
-
-                    is MovieRepository.Request.StarMovieById -> async(coroutineContext) {
-                        movieMutex.withLock {
-                            movieLocalService.getMovieById(request.id)
-                                    .run {
-                                        if (this@run == null) {
-                                            request.response.completeExceptionally(IllegalArgumentException("Movie not found"))
-                                            return@withLock
-                                        } else this
-                                    }
-                                    .let { Movie(it.id, it.posterPath, it.title, it.overview, it.releaseDate, it.voteAverage, !it.isStar) }
-                                    .let { movieLocalService.updateMovie(it) }
-                                    .apply {
-                                        if (this < 0) request.response.completeExceptionally(IllegalArgumentException("Updating movie. Movie not found"))
-                                        else request.response.complete(this)
-                                    }
-                        }
-                    }
-                }
+              // Checking for local data
+              movieLocalService.getMovies().asSequence()
+                  .drop(pages * MovieApi.MOVIES_PER_PAGE)
+                  .take(MovieApi.MOVIES_PER_PAGE)
+                  .toList()
+                  .run {
+                    if (this.isNotEmpty()) this // Have Local data
+                    else  // No Local data.
+                      try {
+                        movieApiService.getMovies(pages + 1)
+                            .also { movieLocalService.addMovies(it) }
+                      } catch (t: Throwable) {
+                        request.response.completeExceptionally(t)
+                        return@async
+                      }
+                  }
+                  .apply {
+                    val from = pages * MovieApi.MOVIES_PER_PAGE
+                    val range = Pair(from, from + this.size)
+                    request.response.complete(MovieRepository.MoviesOnRange(range, this))
+                  }
             }
-        }
-    }
+          }
 
-    override suspend fun send(request: MovieRepository.Request) = actorJob.send(request)
+          is MovieRepository.Request.GetMovieById -> async(coroutineContext) {
+            movieMutex.withLock {
+              movieLocalService.getMovies().asSequence()
+                  .filter { it.id == request.id }
+                  .firstOrNull()
+                  .apply {
+                    if (this == null) request.response.completeExceptionally(IllegalArgumentException("Movie not found"))
+                    else request.response.complete(this)
+                  }
+            }
+          }
+
+          is MovieRepository.Request.StarMovieById -> async(coroutineContext) {
+            movieMutex.withLock {
+              movieLocalService.getMovieById(request.id)
+                  .run {
+                    if (this@run == null) {
+                      request.response.completeExceptionally(IllegalArgumentException("Movie not found"))
+                      return@withLock
+                    } else this
+                  }
+                  .let { Movie(it.id, it.posterPath, it.title, it.overview, it.releaseDate, it.voteAverage, !it.isStar) }
+                  .let { movieLocalService.updateMovie(it) }
+                  .apply {
+                    if (this < 0) request.response.completeExceptionally(IllegalArgumentException("Updating movie. Movie not found"))
+                    else request.response.complete(this)
+                  }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  override suspend fun send(request: MovieRepository.Request) = actorJob.send(request)
 }

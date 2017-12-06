@@ -12,31 +12,31 @@ import timber.log.Timber
 import kotlin.coroutines.experimental.CoroutineContext
 
 class MovieDetailPresenter internal constructor(private val movieRepository: MovieRepository) :
-        BasePresenter<MovieDetailView, MovieDetailView.FromEvent>() {
+    BasePresenter<MovieDetailView, MovieDetailView.FromEvent>() {
 
-    init {
-        actor = actor(CommonPool, Channel.UNLIMITED) {
-            for (fromEvent in this) {
-                Timber.d("[${this.javaClass.simpleName}#${this.hashCode()}@${Thread.currentThread().name}] fromEvent: $fromEvent")
+  init {
+    actor = actor(CommonPool, Channel.UNLIMITED) {
+      for (fromEvent in this) {
+        Timber.d("[${this.javaClass.simpleName}#${this.hashCode()}@${Thread.currentThread().name}] fromEvent: $fromEvent")
 
-                when (fromEvent) {
-                    is MovieDetailView.FromEvent.GetMovieById -> handleFromEvent(coroutineContext) {
-                        val response = CompletableDeferred<Movie>()
-                        movieRepository.send(MovieRepository.Request.GetMovieById(fromEvent.id, response))
-                        val movie = response.await()
-                        view?.toEvent(MovieDetailView.ToEvent.OnMovie(movie))
-                    }
-                }
-            }
+        when (fromEvent) {
+          is MovieDetailView.FromEvent.GetMovieById -> handleFromEvent(coroutineContext) {
+            val response = CompletableDeferred<Movie>()
+            movieRepository.send(MovieRepository.Request.GetMovieById(fromEvent.id, response))
+            val movie = response.await()
+            view?.toEvent(MovieDetailView.ToEvent.OnMovie(movie))
+          }
         }
+      }
     }
+  }
 
-    private fun handleFromEvent(coroutineContext: CoroutineContext,
-                                code: suspend () -> Unit) = async(coroutineContext) {
-        try {
-            code()
-        } catch (t: Throwable) {
-            view?.toEvent(MovieDetailView.ToEvent.OnError(t))
-        }
+  private fun handleFromEvent(coroutineContext: CoroutineContext,
+                              code: suspend () -> Unit) = async(coroutineContext) {
+    try {
+      code()
+    } catch (t: Throwable) {
+      view?.toEvent(MovieDetailView.ToEvent.OnError(t))
     }
+  }
 }

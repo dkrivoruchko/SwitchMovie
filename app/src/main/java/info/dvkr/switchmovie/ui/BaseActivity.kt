@@ -7,15 +7,15 @@ import org.koin.android.ext.android.inject
 import timber.log.Timber
 
 abstract class BaseActivity : AppCompatActivity() {
-    protected val presenterFactory: PresenterFactory by inject()
+  protected val presenterFactory: PresenterFactory by inject()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        Timber.i("[${this.javaClass.simpleName}#${this.hashCode()}@${Thread.currentThread().name}] onCreate")
-    }
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    Timber.i("[${this.javaClass.simpleName}#${this.hashCode()}@${Thread.currentThread().name}] onCreate")
+  }
 
-    override fun onDestroy() {
-        Timber.i("[${this.javaClass.simpleName}#${this.hashCode()}@${Thread.currentThread().name}] onDestroy")
-        super.onDestroy()
-    }
+  override fun onDestroy() {
+    Timber.i("[${this.javaClass.simpleName}#${this.hashCode()}@${Thread.currentThread().name}] onDestroy")
+    super.onDestroy()
+  }
 }

@@ -2,7 +2,7 @@ buildscript {
     ext {
         kotlin_version = '1.2.0'
 
-        build_tools = '27.0.1'
+        build_tools = '27.0.2'
         compile_sdk = 27
         min_sdk = 21
         target_sdk = 27
@@ -17,6 +17,7 @@ buildscript {
         rxjava_version = '2.1.5'
         rxandroid_version = '2.0.1'
         rxrelay_version = '2.0.0'
+        okhttp_version = '3.9.1'
         retrofit_version = '2.3.0'
         binaryprefs_version = '1.0.0-BETA-2'
         timber_version = '4.6.0'

@@ -10,5 +10,5 @@ data class Movie(val id: Int,
                  val isStar: Boolean
 
 ) {
-    override fun toString() = "Movie(id=$id)"
+  override fun toString() = "Movie(id=$id)"
 }

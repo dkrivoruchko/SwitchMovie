@@ -21,73 +21,73 @@ import java.util.*
 
 class MovieDetailActivity : BaseActivity(), MovieDetailView {
 
-    companion object {
-        private const val MOVIE_ID = "MOVIE_ID"
+  companion object {
+    private const val MOVIE_ID = "MOVIE_ID"
 
-        @JvmStatic
-        fun getStartIntent(context: Context, id: Int): Intent {
-            return Intent(context, MovieDetailActivity::class.java).putExtra(MOVIE_ID, id)
+    @JvmStatic
+    fun getStartIntent(context: Context, id: Int): Intent {
+      return Intent(context, MovieDetailActivity::class.java).putExtra(MOVIE_ID, id)
+    }
+  }
+
+  private val presenter: MovieDetailPresenter by lazy {
+    ViewModelProviders.of(this, presenterFactory).get(MovieDetailPresenter::class.java)
+  }
+
+  private val dateParser = SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH)
+  private val dateFormatter = SimpleDateFormat("MMMM dd, yyyy", Locale.ENGLISH)
+
+  override fun toEvent(toEvent: MovieDetailView.ToEvent) {
+    runOnUiThread {
+      Timber.d("[${Thread.currentThread().name} @${this.hashCode()}] toEvent: $toEvent")
+
+      when (toEvent) {
+        is MovieDetailView.ToEvent.OnMovie -> {
+          title = toEvent.movie.title
+
+          Glide.with(applicationContext)
+              .load(toEvent.movie.posterPath)
+              .apply(RequestOptions.bitmapTransform(BlurTransformation(20)))
+              .into(movieDetailBackground)
+
+          Glide.with(applicationContext)
+              .load(toEvent.movie.posterPath)
+              .into(movieDetailImage)
+
+          movieDetailScore.text = toEvent.movie.voteAverage
+          movieDetailRating.text = "Unkown"
+
+          try {
+            val date = dateParser.parse(toEvent.movie.releaseDate)
+            movieDetailReleaseDate.text = dateFormatter.format(date)
+          } catch (ex: ParseException) {
+            movieDetailReleaseDate.text = toEvent.movie.releaseDate
+            toEvent(MovieDetailView.ToEvent.OnError(ex))
+          }
+
+          movieDetailTitle.text = toEvent.movie.title
+          movieDetailOverview.text = toEvent.movie.overview
         }
-    }
 
-    private val presenter: MovieDetailPresenter by lazy {
-        ViewModelProviders.of(this, presenterFactory).get(MovieDetailPresenter::class.java)
-    }
-
-    private val dateParser = SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH)
-    private val dateFormatter = SimpleDateFormat("MMMM dd, yyyy", Locale.ENGLISH)
-
-    override fun toEvent(toEvent: MovieDetailView.ToEvent) {
-        runOnUiThread {
-            Timber.d("[${Thread.currentThread().name} @${this.hashCode()}] toEvent: $toEvent")
-
-            when (toEvent) {
-                is MovieDetailView.ToEvent.OnMovie -> {
-                    title = toEvent.movie.title
-
-                    Glide.with(applicationContext)
-                            .load(toEvent.movie.posterPath)
-                            .apply(RequestOptions.bitmapTransform(BlurTransformation(20)))
-                            .into(movieDetailBackground)
-
-                    Glide.with(applicationContext)
-                            .load(toEvent.movie.posterPath)
-                            .into(movieDetailImage)
-
-                    movieDetailScore.text = toEvent.movie.voteAverage
-                    movieDetailRating.text = "Unkown"
-
-                    try {
-                        val date = dateParser.parse(toEvent.movie.releaseDate)
-                        movieDetailReleaseDate.text = dateFormatter.format(date)
-                    } catch (ex: ParseException) {
-                        movieDetailReleaseDate.text = toEvent.movie.releaseDate
-                        toEvent(MovieDetailView.ToEvent.OnError(ex))
-                    }
-
-                    movieDetailTitle.text = toEvent.movie.title
-                    movieDetailOverview.text = toEvent.movie.overview
-                }
-
-                is MovieDetailView.ToEvent.OnError -> {
-                    Toast.makeText(applicationContext, toEvent.error.message, Toast.LENGTH_LONG).show()
-                }
-            }
+        is MovieDetailView.ToEvent.OnError -> {
+          Toast.makeText(applicationContext, toEvent.error.message, Toast.LENGTH_LONG).show()
         }
+      }
     }
+  }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_movie_detail)
-        presenter.attach(this)
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    setContentView(R.layout.activity_movie_detail)
+    presenter.attach(this)
 
-        val movieId = intent.getIntExtra(MOVIE_ID, -1)
-        presenter.offer(MovieDetailView.FromEvent.GetMovieById(movieId))
+    val movieId = intent.getIntExtra(MOVIE_ID, -1)
+    presenter.offer(MovieDetailView.FromEvent.GetMovieById(movieId))
 
-    }
+  }
 
-    override fun onDestroy() {
-        presenter.detach()
-        super.onDestroy()
-    }
+  override fun onDestroy() {
+    presenter.detach()
+    super.onDestroy()
+  }
 }

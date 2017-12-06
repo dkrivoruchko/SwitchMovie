@@ -8,11 +8,11 @@ import timber.log.Timber
 
 class SettingsImpl(preferences: Preferences) : Settings {
 
-    override var example: Boolean by bindPreference(preferences, "PREF_KEY_EXAMPLE", true)
+  override var example: Boolean by bindPreference(preferences, "PREF_KEY_EXAMPLE", true)
 
-    init {
-        Timber.i("[${this.javaClass.simpleName}#${this.hashCode()}@${Thread.currentThread().name}] Init")
+  init {
+    Timber.i("[${this.javaClass.simpleName}#${this.hashCode()}@${Thread.currentThread().name}] Init")
 
-        example = false
-    }
+    example = false
+  }
 }
