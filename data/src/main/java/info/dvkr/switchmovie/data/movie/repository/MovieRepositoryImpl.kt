@@ -43,6 +43,7 @@ class MovieRepositoryImpl(private val movieApiService: MovieApiService,
                                                         .also { movieLocalService.addMovies(it) }
                                             } catch (t: Throwable) {
                                                 request.response.completeExceptionally(t)
+                                                Timber.e(t)
                                                 return@async
                                             }
                                     }
@@ -78,7 +79,7 @@ class MovieRepositoryImpl(private val movieApiService: MovieApiService,
                                     .let { Movie(it.id, it.posterPath, it.title, it.overview, it.releaseDate, it.voteAverage, !it.isStar) }
                                     .let { movieLocalService.updateMovie(it) }
                                     .apply {
-                                        if (this < 0) request.response.completeExceptionally(IllegalArgumentException("Updating movie. Movie not found"))
+                                        if (this < 0) request.response.completeExceptionally(IllegalArgumentException("Updating movieData. Movie not found"))
                                         else request.response.complete(this)
                                     }
                         }

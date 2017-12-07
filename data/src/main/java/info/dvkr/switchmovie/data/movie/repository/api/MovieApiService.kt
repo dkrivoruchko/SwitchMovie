@@ -49,6 +49,7 @@ class MovieApiService(private val movieApi: MovieApi.Service,
 
             override fun onFailure(call: Call<T>, t: Throwable) {
                 Timber.v("[${this.javaClass.simpleName}#${this.hashCode()}@${Thread.currentThread().name}] onFailure: $t")
+                Timber.e(t)
 
                 continuation.isActive || return
                 continuation.resumeWithException(t)

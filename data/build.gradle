@@ -44,6 +44,7 @@ dependencies {
     implementation "io.reactivex.rxjava2:rxjava:$rxjava_version"
     implementation "io.reactivex.rxjava2:rxandroid:$rxandroid_version"
     implementation "com.jakewharton.rxrelay2:rxrelay:$rxrelay_version"
+    implementation "android.arch.lifecycle:extensions:1.0.0"
 
     implementation "com.github.iamironz:binaryprefs:$binaryprefs_version"
 

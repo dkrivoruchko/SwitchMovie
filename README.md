@@ -15,7 +15,7 @@ Basic loading animation implemented.
 **Please note:**
 * Original task screenshots are from Apple device and are not relevant for android.
 * No local cache timeout/invalidation logic. Just store and get.
-* Information for movie rating is not available in JSON and no description in documentation found.
+* Information for movieData rating is not available in JSON and no description in documentation found.
 * Requirements for landscape layouts are not provided (implemented as I see fit).
 * No loading animation for image loading.
 * Error handling is very basic.
@@ -56,7 +56,7 @@ Application is based on Clean Architecture and MVP pattern and uses:
 
 ### The Movie Database API
 
-You should use the [The Movie Database API](http://docs.themoviedb.apiary.io/#) to fetch JSON movie data.
+You should use the [The Movie Database API](http://docs.themoviedb.apiary.io/#) to fetch JSON movieData data.
 
 In particular, you should use the endpoint that returns [now playing movies](http://docs.themoviedb.apiary.io/#reference/movies/movienowplaying).
 
@@ -64,7 +64,7 @@ You can use this API Key: `ebea8cfca72fdff8d2624ad7bbf78e4c`
 
 **Sample Request**
 
-`http://api.themoviedb.org/3/movie/now_playing?api_key=ebea8cfca72fdff8d2624ad7bbf78e4c`
+`http://api.themoviedb.org/3/movieData/now_playing?api_key=ebea8cfca72fdff8d2624ad7bbf78e4c`
 
 **Sample Response Snippet**
 ```json
@@ -110,7 +110,7 @@ You can use this API Key: `ebea8cfca72fdff8d2624ad7bbf78e4c`
 
 **Constructing Poster URLs**
 
-The movie api responses include a field called “poster_path” you will need to construct a full image
+The movieData api responses include a field called “poster_path” you will need to construct a full image
 url based on the path. The [documentation](http://docs.themoviedb.apiary.io/#reference/configuration/configuration) explains how to do this for various image sizes.
 Here’s how you can build urls for 324 pixel wide poster images:
 
@@ -124,13 +124,13 @@ full_url: `http://image.tmdb.org/t/p/w342/5JU9ytZJyR3zmClGmVm9q4Geqbd.jpg`
 
 ### Functionality
 
-You should create a simple app that uses the data from the the Movie Database API and displays the movie poster thumbnails in a grid layout.
+You should create a simple app that uses the data from the the Movie Database API and displays the movieData poster thumbnails in a grid layout.
 
 **Please follow the designs above as closely as possible.** A keen eye for design details is something we definitely look for.
 
-You should load an initial set of movie data for 20 movies, display those in a grid and when the user scrolls down you should progressively load another set of 20 movies, using the page query parameter:
+You should load an initial set of movieData data for 20 movies, display those in a grid and when the user scrolls down you should progressively load another set of 20 movies, using the page query parameter:
 
-`http://api.themoviedb.org/3/movie/now_playing?api_key=ebea8cfca72fdff8d2624ad7bbf78e4c&page=2`
+`http://api.themoviedb.org/3/movieData/now_playing?api_key=ebea8cfca72fdff8d2624ad7bbf78e4c&page=2`
 
 You should also implement a detail view that displays a detail view when a user taps on a poster in the grid with a back arrow to return to the grid view.
 

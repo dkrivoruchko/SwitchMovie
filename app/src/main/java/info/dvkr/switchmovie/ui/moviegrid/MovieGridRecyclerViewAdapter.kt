@@ -8,28 +8,20 @@ import android.view.View
 import android.view.ViewGroup
 import com.bumptech.glide.Glide
 import info.dvkr.switchmovie.R
-import info.dvkr.switchmovie.data.presenter.moviegrid.MovieGridView
+import info.dvkr.switchmovie.domain.model.Movie
 import kotlinx.android.synthetic.main.movie_item.view.*
 
 
-internal class MovieGridRecyclerViewAdapter(private val onItemStarClickListener: (MovieGridView.MovieGridItem) -> Unit,
-                                            private val onItemClickListener: (MovieGridView.MovieGridItem) -> Unit,
-                                            private val onItemLongClickListener: (MovieGridView.MovieGridItem) -> Boolean,
+internal class MovieGridRecyclerViewAdapter(private val onItemStarClickListener: (Movie) -> Unit,
+                                            private val onItemClickListener: (Movie) -> Unit,
+                                            private val onItemLongClickListener: (Movie) -> Boolean,
                                             private val onBottomReachedListener: () -> Unit) :
         RecyclerView.Adapter<MovieGridRecyclerViewAdapter.ViewHolder>() {
 
-    private var movieList: MutableList<MovieGridView.MovieGridItem> = mutableListOf()
+    private var movieList: MutableList<Movie> = mutableListOf()
 
-    internal fun setMovieList(newMovieList: List<MovieGridView.MovieGridItem>) {
+    internal fun setMovieList(newMovieList: List<Movie>) {
         movieList = newMovieList.toMutableList()
-        notifyDataSetChanged()
-    }
-
-    internal fun updateMovieList(range: Pair<Int, Int>, addMovieList: List<MovieGridView.MovieGridItem>) {
-        if (movieList.size < range.first) throw IllegalStateException("Wrong Range")
-
-        movieList = movieList.subList(0, range.first)
-        movieList.addAll(addMovieList)
         notifyDataSetChanged()
     }
 
@@ -47,10 +39,10 @@ internal class MovieGridRecyclerViewAdapter(private val onItemStarClickListener:
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
-        fun bind(item: MovieGridView.MovieGridItem,
-                 starListener: (MovieGridView.MovieGridItem) -> Unit,
-                 listener: (MovieGridView.MovieGridItem) -> Unit,
-                 longListener: (MovieGridView.MovieGridItem) -> Boolean) = with(itemView) {
+        fun bind(item: Movie,
+                 starListener: (Movie) -> Unit,
+                 listener: (Movie) -> Unit,
+                 longListener: (Movie) -> Boolean) = with(itemView) {
 
             Glide.with(context).load(item.posterPath).into(movieItemImage)
             if (item.isStar)

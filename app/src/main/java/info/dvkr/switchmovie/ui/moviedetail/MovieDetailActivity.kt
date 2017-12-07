@@ -1,25 +1,27 @@
 package info.dvkr.switchmovie.ui.moviedetail
 
+import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import info.dvkr.switchmovie.R
-import info.dvkr.switchmovie.data.presenter.moviedetail.MovieDetailPresenter
-import info.dvkr.switchmovie.data.presenter.moviedetail.MovieDetailView
+import info.dvkr.switchmovie.data.presenter.moviedetail.MovieDetailViewModel
+import info.dvkr.switchmovie.data.presenter.moviegrid.Result
+import info.dvkr.switchmovie.domain.model.Movie
 import info.dvkr.switchmovie.ui.BaseActivity
 import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.android.synthetic.main.activity_movie_detail.*
-import timber.log.Timber
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.*
 
 
-class MovieDetailActivity : BaseActivity(), MovieDetailView {
+class MovieDetailActivity : BaseActivity() {
 
     companion object {
         private const val MOVIE_ID = "MOVIE_ID"
@@ -30,64 +32,64 @@ class MovieDetailActivity : BaseActivity(), MovieDetailView {
         }
     }
 
-    private val presenter: MovieDetailPresenter by lazy {
-        ViewModelProviders.of(this, presenterFactory).get(MovieDetailPresenter::class.java)
+    private val viewModel: MovieDetailViewModel by lazy {
+        ViewModelProviders.of(this, viewModelFactory).get(MovieDetailViewModel::class.java)
     }
 
     private val dateParser = SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH)
     private val dateFormatter = SimpleDateFormat("MMMM dd, yyyy", Locale.ENGLISH)
 
-    override fun toEvent(toEvent: MovieDetailView.ToEvent) {
-        runOnUiThread {
-            Timber.d("[${Thread.currentThread().name} @${this.hashCode()}] toEvent: $toEvent")
-
-            when (toEvent) {
-                is MovieDetailView.ToEvent.OnMovie -> {
-                    title = toEvent.movie.title
-
-                    Glide.with(applicationContext)
-                            .load(toEvent.movie.posterPath)
-                            .apply(RequestOptions.bitmapTransform(BlurTransformation(20)))
-                            .into(movieDetailBackground)
-
-                    Glide.with(applicationContext)
-                            .load(toEvent.movie.posterPath)
-                            .into(movieDetailImage)
-
-                    movieDetailScore.text = toEvent.movie.voteAverage
-                    movieDetailRating.text = "Unkown"
-
-                    try {
-                        val date = dateParser.parse(toEvent.movie.releaseDate)
-                        movieDetailReleaseDate.text = dateFormatter.format(date)
-                    } catch (ex: ParseException) {
-                        movieDetailReleaseDate.text = toEvent.movie.releaseDate
-                        toEvent(MovieDetailView.ToEvent.OnError(ex))
-                    }
-
-                    movieDetailTitle.text = toEvent.movie.title
-                    movieDetailOverview.text = toEvent.movie.overview
-                }
-
-                is MovieDetailView.ToEvent.OnError -> {
-                    Toast.makeText(applicationContext, toEvent.error.message, Toast.LENGTH_LONG).show()
-                }
-            }
-        }
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.wtf("MovieDetailActivity", "[${Thread.currentThread().name}] onCreate: Start")
         setContentView(R.layout.activity_movie_detail)
-        presenter.attach(this)
+        viewModel.movieData.observe(this, Observer<Result<Movie>> {
+            if (it?.error != null) {
+                showError(it.error)
+            } else if (it?.result != null) {
+                onMovieReceive(it.result)
+            }
+        })
 
         val movieId = intent.getIntExtra(MOVIE_ID, -1)
-        presenter.offer(MovieDetailView.FromEvent.GetMovieById(movieId))
+        viewModel.getMovie(movieId)
 
+        Log.wtf("MovieDetailActivity", "[${Thread.currentThread().name}] onCreate: End")
     }
 
-    override fun onDestroy() {
-        presenter.detach()
-        super.onDestroy()
+    private fun onMovieReceive(movie: Movie?) {
+        if (movie == null) {
+            return
+        }
+
+        title = movie.title
+
+        Glide.with(applicationContext)
+                .load(movie.posterPath)
+                .apply(RequestOptions.bitmapTransform(BlurTransformation(20)))
+                .into(movieDetailBackground)
+
+        Glide.with(applicationContext)
+                .load(movie.posterPath)
+                .into(movieDetailImage)
+
+        movieDetailScore.text = movie.voteAverage
+        movieDetailRating.text = "Unkown"
+
+        try {
+            val date = dateParser.parse(movie.releaseDate)
+            movieDetailReleaseDate.text = dateFormatter.format(date)
+        } catch (ex: ParseException) {
+            showError(ex)
+            movieDetailReleaseDate.text = movie.releaseDate
+        }
+
+        movieDetailTitle.text = movie.title
+        movieDetailOverview.text = movie.overview
     }
+
+    private fun showError(error: Throwable?) {
+        Toast.makeText(applicationContext, error?.message, Toast.LENGTH_LONG).show()
+    }
+
 }

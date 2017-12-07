@@ -2,12 +2,12 @@ package info.dvkr.switchmovie.ui
 
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import info.dvkr.switchmovie.data.presenter.PresenterFactory
+import info.dvkr.switchmovie.data.presenter.ViewModelFactory
 import org.koin.android.ext.android.inject
 import timber.log.Timber
 
 abstract class BaseActivity : AppCompatActivity() {
-    protected val presenterFactory: PresenterFactory by inject()
+    protected val viewModelFactory: ViewModelFactory by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
