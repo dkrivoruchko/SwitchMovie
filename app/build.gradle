@@ -41,16 +41,15 @@ dependencies {
 
     // Support
     implementation "com.android.support:design:$support_version"
-//    implementation "com.android.support:support-v13:$support_version"
     implementation "com.android.support:cardview-v7:$support_version"
     implementation 'com.android.support.constraint:constraint-layout:1.0.2'
     implementation "android.arch.lifecycle:extensions:$lifecycle_version"
 
     implementation "org.koin:koin-android:$koin_version"
 
-    implementation "io.reactivex.rxjava2:rxjava:$rxjava_version"
-    implementation "io.reactivex.rxjava2:rxandroid:$rxandroid_version"
-    implementation "com.jakewharton.rxrelay2:rxrelay:$rxrelay_version"
+//    implementation "io.reactivex.rxjava2:rxjava:$rxjava_version"
+//    implementation "io.reactivex.rxjava2:rxandroid:$rxandroid_version"
+//    implementation "com.jakewharton.rxrelay2:rxrelay:$rxrelay_version"
 
     implementation "com.github.iamironz:binaryprefs:$binaryprefs_version"
 

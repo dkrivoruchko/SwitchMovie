@@ -17,6 +17,6 @@ dependencies {
     implementation "com.android.support:support-annotations:$support_version"
 
     // Rx
-    implementation "io.reactivex.rxjava2:rxjava:$rxjava_version"
-    implementation "com.jakewharton.rxrelay2:rxrelay:$rxrelay_version"
+//    implementation "io.reactivex.rxjava2:rxjava:$rxjava_version"
+//    implementation "com.jakewharton.rxrelay2:rxrelay:$rxrelay_version"
 }
