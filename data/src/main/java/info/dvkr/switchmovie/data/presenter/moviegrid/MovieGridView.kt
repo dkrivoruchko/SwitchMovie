@@ -9,7 +9,6 @@ interface MovieGridView {
 
   // From MovieGridView to MovieGridPresenter
   @Keep sealed class FromEvent {
-    @Keep object GetCache : FromEvent()
     @Keep object RefreshItems : FromEvent()
     @Keep data class GetNext(val from: Int) : FromEvent()
     @Keep data class GetMovieById(val id: Int) : FromEvent()

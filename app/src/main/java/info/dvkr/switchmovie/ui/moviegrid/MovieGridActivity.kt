@@ -127,15 +127,6 @@ class MovieGridActivity : BaseActivity(), MovieGridView {
     }
 
     presenter.attach(this)
-
-//        if (savedInstanceState == null) {
-//            presenter.offer(MovieGridView.FromEvent.GetCache)
-//            presenter.offer(MovieGridView.FromEvent.RefreshItems)
-//        } else {
-//            selectedMovieId = savedInstanceState.getInt(SELECTED_MOVIE_ID)
-//            presenter.offer(MovieGridView.FromEvent.GetCache)
-//        }
-
     presenter.offer(MovieGridView.FromEvent.RefreshItems)
 
     selectedMovieId = savedInstanceState?.getInt(SELECTED_MOVIE_ID) ?: -1

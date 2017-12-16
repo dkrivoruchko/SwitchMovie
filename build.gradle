@@ -10,7 +10,7 @@ buildscript {
         version_code = 2
         version_name = '2.0'
 
-        coroutine_version = '0.19.3'
+        coroutine_version = '0.20'
         support_version = '27.0.2'
         lifecycle_version = '1.0.0'
         koin_version = '0.6.1'
