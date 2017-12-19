@@ -3,7 +3,9 @@ package info.dvkr.switchmovie.ui.moviedetail
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.os.Bundle
+import android.support.v4.content.ContextCompat
 import android.widget.Toast
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
@@ -67,6 +69,11 @@ class MovieDetailActivity : BaseActivity(), MovieDetailView {
 
         movieDetailTitle.text = toEvent.movie.title
         movieDetailOverview.text = toEvent.movie.overview
+
+        if (toEvent.movie.isStar)
+          movieDetailStar.imageTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.colorAccent))
+        else
+          movieDetailStar.imageTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.colorWhite))
       }
 
       is MovieDetailView.ToEvent.OnError -> {

@@ -57,7 +57,6 @@ class MovieRepositoryImpl(private val movieApiService: MovieApiService,
   private suspend fun updateMovie(movie: Movie): Int =
       movieLocalService.updateMovie(movie)
           .run {
-            delay(10000)
             if (this < 0) throw IllegalArgumentException("Updating movie. Movie not found")
             this
           }

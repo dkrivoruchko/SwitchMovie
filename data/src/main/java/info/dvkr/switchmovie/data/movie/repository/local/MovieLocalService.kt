@@ -3,11 +3,14 @@ package info.dvkr.switchmovie.data.movie.repository.local
 import com.ironz.binaryprefs.Preferences
 import info.dvkr.switchmovie.data.utils.bindPreference
 import info.dvkr.switchmovie.domain.model.Movie
+import info.dvkr.switchmovie.domain.notifications.NotificationManager
+import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.sync.Mutex
 import kotlinx.coroutines.experimental.sync.withLock
 import timber.log.Timber
 
-class MovieLocalService(preferences: Preferences) {
+class MovieLocalService(private val notificationManager: NotificationManager,
+                        preferences: Preferences) {
 
   private var localMovieList by bindPreference(preferences, MovieLocal.LocalList.LOCAL_LIST_KEY, MovieLocal.LocalList())
   private val movieMutex = Mutex()
@@ -41,11 +44,13 @@ class MovieLocalService(preferences: Preferences) {
         .apply {
           localMovieList = MovieLocal.LocalList(this)
         }
+
+    inMovieList.forEach { notificationManager.offerEvent(NotificationManager.Event.OnMovieAdd(it)) }
   }
 
   suspend fun updateMovie(inMovie: Movie): Int = movieMutex.withLock {
     Timber.d("[${this.javaClass.simpleName}#${this.hashCode()}@${Thread.currentThread().name}] updateMovie: $inMovie")
-
+    delay(10000)
     var index = -1
     val mutableList = localMovieList.items.toMutableList()
     mutableList.asSequence()
@@ -57,6 +62,9 @@ class MovieLocalService(preferences: Preferences) {
     val localMovie = MovieLocal.LocalMovie(inMovie.id, inMovie.posterPath, inMovie.title, inMovie.overview, inMovie.releaseDate, inMovie.voteAverage, inMovie.isStar)
     mutableList[index] = localMovie
     localMovieList = MovieLocal.LocalList(mutableList.toList())
+
+    notificationManager.offerEvent(NotificationManager.Event.OnMovieUpdate(inMovie))
+
     return index
   }
 }
