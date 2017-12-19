@@ -8,6 +8,7 @@ import android.widget.Toast
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import info.dvkr.switchmovie.R
+import info.dvkr.switchmovie.data.presenter.BaseView
 import info.dvkr.switchmovie.data.presenter.moviedetail.MovieDetailPresenter
 import info.dvkr.switchmovie.data.presenter.moviedetail.MovieDetailView
 import info.dvkr.switchmovie.ui.BaseActivity
@@ -37,41 +38,39 @@ class MovieDetailActivity : BaseActivity(), MovieDetailView {
   private val dateParser = SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH)
   private val dateFormatter = SimpleDateFormat("MMMM dd, yyyy", Locale.ENGLISH)
 
-  override fun toEvent(toEvent: MovieDetailView.ToEvent) {
-    runOnUiThread {
-      Timber.d("[${Thread.currentThread().name} @${this.hashCode()}] toEvent: $toEvent")
+  override fun toEvent(toEvent: BaseView.BaseToEvent) {
+    Timber.d("[${Thread.currentThread().name} @${this.hashCode()}] toEvent: $toEvent")
 
-      when (toEvent) {
-        is MovieDetailView.ToEvent.OnMovie -> {
-          title = toEvent.movie.title
+    when (toEvent) {
+      is MovieDetailView.ToEvent.OnMovie -> {
+        title = toEvent.movie.title
 
-          Glide.with(applicationContext)
-              .load(toEvent.movie.posterPath)
-              .apply(RequestOptions.bitmapTransform(BlurTransformation(20)))
-              .into(movieDetailBackground)
+        Glide.with(applicationContext)
+            .load(toEvent.movie.posterPath)
+            .apply(RequestOptions.bitmapTransform(BlurTransformation(20)))
+            .into(movieDetailBackground)
 
-          Glide.with(applicationContext)
-              .load(toEvent.movie.posterPath)
-              .into(movieDetailImage)
+        Glide.with(applicationContext)
+            .load(toEvent.movie.posterPath)
+            .into(movieDetailImage)
 
-          movieDetailScore.text = toEvent.movie.voteAverage
-          movieDetailRating.text = "Unkown"
+        movieDetailScore.text = toEvent.movie.voteAverage
+        movieDetailRating.text = "Unkown"
 
-          try {
-            val date = dateParser.parse(toEvent.movie.releaseDate)
-            movieDetailReleaseDate.text = dateFormatter.format(date)
-          } catch (ex: ParseException) {
-            movieDetailReleaseDate.text = toEvent.movie.releaseDate
-            toEvent(MovieDetailView.ToEvent.OnError(ex))
-          }
-
-          movieDetailTitle.text = toEvent.movie.title
-          movieDetailOverview.text = toEvent.movie.overview
+        try {
+          val date = dateParser.parse(toEvent.movie.releaseDate)
+          movieDetailReleaseDate.text = dateFormatter.format(date)
+        } catch (ex: ParseException) {
+          movieDetailReleaseDate.text = toEvent.movie.releaseDate
+          toEvent(MovieDetailView.ToEvent.OnError(ex))
         }
 
-        is MovieDetailView.ToEvent.OnError -> {
-          Toast.makeText(applicationContext, toEvent.error.message, Toast.LENGTH_LONG).show()
-        }
+        movieDetailTitle.text = toEvent.movie.title
+        movieDetailOverview.text = toEvent.movie.overview
+      }
+
+      is MovieDetailView.ToEvent.OnError -> {
+        Toast.makeText(applicationContext, toEvent.error.message, Toast.LENGTH_LONG).show()
       }
     }
   }

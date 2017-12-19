@@ -9,6 +9,7 @@ import android.widget.Toast
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import info.dvkr.switchmovie.R
+import info.dvkr.switchmovie.data.presenter.BaseView
 import info.dvkr.switchmovie.data.presenter.moviegrid.MovieGridPresenter
 import info.dvkr.switchmovie.data.presenter.moviegrid.MovieGridView
 import info.dvkr.switchmovie.ui.BaseActivity
@@ -40,65 +41,63 @@ class MovieGridActivity : BaseActivity(), MovieGridView {
   private val dateParser = SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH)
   private val dateFormatter = SimpleDateFormat("MMMM dd, yyyy", Locale.ENGLISH)
 
-  override fun toEvent(toEvent: MovieGridView.ToEvent) {
-    runOnUiThread {
-      Timber.d("[${this.javaClass.simpleName}#${this.hashCode()}@${Thread.currentThread().name}] toEvent: $toEvent")
+  override fun toEvent(toEvent: BaseView.BaseToEvent) {
+    Timber.d("[${this.javaClass.simpleName}#${this.hashCode()}@${Thread.currentThread().name}] toEvent: $toEvent")
 
-      when (toEvent) {
-        is MovieGridView.ToEvent.OnRefresh -> {
-          movieGridSwipeRefresh.isRefreshing = toEvent.isRefreshing
+    when (toEvent) {
+      is BaseView.BaseToEvent.OnRefresh -> {
+        movieGridSwipeRefresh.isRefreshing = toEvent.isRefreshing
+      }
+
+      is MovieGridView.ToEvent.OnMovieGridItemsRange -> {
+        currentRange = toEvent.range
+        movieGridRecyclerViewAdapter.updateMovieList(toEvent.range, toEvent.list)
+
+        if (selectedMovieId <= 0) {
+          presenter.offer(MovieGridView.FromEvent.GetMovieById(toEvent.list.first().id))
+        }
+      }
+
+      is MovieGridView.ToEvent.OnMovie -> {
+        title = toEvent.movie.title
+
+        Glide.with(applicationContext)
+            .load(toEvent.movie.posterPath)
+            .apply(RequestOptions.bitmapTransform(BlurTransformation(20)))
+            .into(movieDetailBackground)
+
+        Glide.with(applicationContext)
+            .load(toEvent.movie.posterPath)
+            .into(movieDetailImage)
+
+        movieDetailScore.text = toEvent.movie.voteAverage
+        movieDetailRating.text = "Unkown"
+
+        try {
+          val date = dateParser.parse(toEvent.movie.releaseDate)
+          movieDetailReleaseDate.text = dateFormatter.format(date)
+        } catch (ex: ParseException) {
+          movieDetailReleaseDate.text = toEvent.movie.releaseDate
+          toEvent(MovieGridView.ToEvent.OnError(ex))
         }
 
-        is MovieGridView.ToEvent.OnMovieGridItemsRange -> {
-          currentRange = toEvent.range
-          movieGridRecyclerViewAdapter.updateMovieList(toEvent.range, toEvent.list)
+        movieDetailTitle.text = toEvent.movie.title
+        movieDetailOverview.text = toEvent.movie.overview
 
-          if (selectedMovieId <= 0) {
-            presenter.offer(MovieGridView.FromEvent.GetMovieById(toEvent.list.first().id))
-          }
+        if (toEvent.movie.isStar)
+          movieDetailStar.imageTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.colorAccent))
+        else
+          movieDetailStar.imageTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.colorWhite))
+      }
+
+      is MovieGridView.ToEvent.OnStarMovieById -> {
+        if (selectedMovieId == toEvent.id) {
+          presenter.offer(MovieGridView.FromEvent.GetMovieById(toEvent.id))
         }
+      }
 
-        is MovieGridView.ToEvent.OnMovie -> {
-          title = toEvent.movie.title
-
-          Glide.with(applicationContext)
-              .load(toEvent.movie.posterPath)
-              .apply(RequestOptions.bitmapTransform(BlurTransformation(20)))
-              .into(movieDetailBackground)
-
-          Glide.with(applicationContext)
-              .load(toEvent.movie.posterPath)
-              .into(movieDetailImage)
-
-          movieDetailScore.text = toEvent.movie.voteAverage
-          movieDetailRating.text = "Unkown"
-
-          try {
-            val date = dateParser.parse(toEvent.movie.releaseDate)
-            movieDetailReleaseDate.text = dateFormatter.format(date)
-          } catch (ex: ParseException) {
-            movieDetailReleaseDate.text = toEvent.movie.releaseDate
-            toEvent(MovieGridView.ToEvent.OnError(ex))
-          }
-
-          movieDetailTitle.text = toEvent.movie.title
-          movieDetailOverview.text = toEvent.movie.overview
-
-          if (toEvent.movie.isStar)
-            movieDetailStar.imageTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.colorAccent))
-          else
-            movieDetailStar.imageTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.colorWhite))
-        }
-
-        is MovieGridView.ToEvent.OnStarMovieById -> {
-          if (selectedMovieId == toEvent.id) {
-            presenter.offer(MovieGridView.FromEvent.GetMovieById(toEvent.id))
-          }
-        }
-
-        is MovieGridView.ToEvent.OnError -> {
-          Toast.makeText(applicationContext, toEvent.error.message, Toast.LENGTH_LONG).show()
-        }
+      is MovieGridView.ToEvent.OnError -> {
+        Toast.makeText(applicationContext, toEvent.error.message, Toast.LENGTH_LONG).show()
       }
     }
   }

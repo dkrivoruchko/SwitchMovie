@@ -4,29 +4,28 @@ import info.dvkr.switchmovie.data.movie.repository.api.MovieApi
 import info.dvkr.switchmovie.data.movie.repository.api.MovieApiService
 import info.dvkr.switchmovie.data.movie.repository.local.MovieLocalService
 import info.dvkr.switchmovie.domain.model.Movie
-import info.dvkr.switchmovie.domain.repository.MovieRepository
-import kotlinx.coroutines.experimental.ThreadPoolDispatcher
+import info.dvkr.switchmovie.domain.repositories.MovieRepository
+import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.run
+import timber.log.Timber
 
-class MovieRepositoryImpl(private val repositoryContext: ThreadPoolDispatcher,
-                          private val movieApiService: MovieApiService,
+class MovieRepositoryImpl(private val movieApiService: MovieApiService,
                           private val movieLocalService: MovieLocalService) : MovieRepository {
 
   @Suppress("UNCHECKED_CAST")
-  override suspend fun <T> get(request: MovieRepository.Request<T>): T = run(repositoryContext) {
+  override suspend fun <T> get(request: MovieRepository.Request<T>): T = run(CommonPool) {
+    Timber.d("[${this.javaClass.simpleName}#${this.hashCode()}@${Thread.currentThread().name}] request: $request")
     when (request) {
-      is MovieRepository.Request.GetMoviesFromIndex -> getMoviesFromIndex(request) as T
-      is MovieRepository.Request.GetMovieById -> getMovieById(request) as T
-      is MovieRepository.Request.StarMovieById -> starMovieById(request) as T
+      is MovieRepository.Request.GetMoviesFromIndex -> getMoviesFromIndex(request.from) as T
+      is MovieRepository.Request.GetMovieById -> getMovieById(request.id) as T
+      is MovieRepository.Request.UpdateMovie -> updateMovie(request.movie) as T
     }
   }
 
   @Throws(Throwable::class)
-  private suspend fun getMoviesFromIndex(request: MovieRepository.Request.GetMoviesFromIndex)
-      : MovieRepository.MoviesOnRange {
-
-    val pages: Int = request.from / MovieApi.MOVIES_PER_PAGE
+  private suspend fun getMoviesFromIndex(from: Int): MovieRepository.MoviesOnRange {
+    val pages: Int = from / MovieApi.MOVIES_PER_PAGE
     // Checking for local data
     movieLocalService.getMovies()
         .asSequence()
@@ -47,27 +46,18 @@ class MovieRepositoryImpl(private val repositoryContext: ThreadPoolDispatcher,
   }
 
   @Throws(IllegalArgumentException::class)
-  private suspend fun getMovieById(request: MovieRepository.Request.GetMovieById): Movie =
-      movieLocalService.getMovies()
-          .asSequence()
-          .filter { it.id == request.id }
-          .firstOrNull()
+  private suspend fun getMovieById(id: Int): Movie =
+      movieLocalService.getMovieById(id)
           .run {
             if (this == null) throw IllegalArgumentException("Movie not found")
             this
           }
 
   @Throws(IllegalArgumentException::class)
-  private suspend fun starMovieById(request: MovieRepository.Request.StarMovieById): Int =
-      movieLocalService.getMovieById(request.id)
+  private suspend fun updateMovie(movie: Movie): Int =
+      movieLocalService.updateMovie(movie)
           .run {
-            delay(5000)
-            if (this@run == null) throw IllegalArgumentException("Movie not found")
-            else this
-          }
-          .let { Movie(it.id, it.posterPath, it.title, it.overview, it.releaseDate, it.voteAverage, !it.isStar) }
-          .let { movieLocalService.updateMovie(it) }
-          .run {
+            delay(10000)
             if (this < 0) throw IllegalArgumentException("Updating movie. Movie not found")
             this
           }

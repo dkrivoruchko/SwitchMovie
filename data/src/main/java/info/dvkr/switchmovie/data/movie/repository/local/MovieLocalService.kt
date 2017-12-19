@@ -12,14 +12,14 @@ class MovieLocalService(preferences: Preferences) {
   private var localMovieList by bindPreference(preferences, MovieLocal.LocalList.LOCAL_LIST_KEY, MovieLocal.LocalList())
   private val movieMutex = Mutex()
 
-  suspend fun getMovies(): List<Movie> = movieMutex.withLock {
+  fun getMovies(): List<Movie> = run {
     Timber.d("[${this.javaClass.simpleName}#${this.hashCode()}@${Thread.currentThread().name}] getMovies")
 
     return localMovieList.items
         .map { Movie(it.id, it.posterPath, it.title, it.overview, it.releaseDate, it.voteAverage, it.isStar) }
   }
 
-  suspend fun getMovieById(movieId: Int): Movie? = movieMutex.withLock {
+  fun getMovieById(movieId: Int): Movie? = run {
     Timber.d("[${this.javaClass.simpleName}#${this.hashCode()}@${Thread.currentThread().name}] getMovieById: $movieId")
 
     return localMovieList.items.asSequence()
