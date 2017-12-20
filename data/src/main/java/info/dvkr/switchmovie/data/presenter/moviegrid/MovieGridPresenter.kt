@@ -1,15 +1,16 @@
 package info.dvkr.switchmovie.data.presenter.moviegrid
 
+import info.dvkr.switchmovie.data.notifications.NotificationManager
 import info.dvkr.switchmovie.data.presenter.BasePresenter
 import info.dvkr.switchmovie.domain.model.Movie
-import info.dvkr.switchmovie.domain.notifications.NotificationManager
+import info.dvkr.switchmovie.domain.notifications.BaseNotificationManager
 import info.dvkr.switchmovie.domain.usecase.UseCases
 import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.channels.Channel
 import kotlinx.coroutines.experimental.channels.actor
 
-open class MovieGridPresenter internal constructor(private val useCases: UseCases,
-                                                   notificationManager: NotificationManager)
+class MovieGridPresenter internal constructor(private val useCases: UseCases,
+                                              notificationManager: NotificationManager)
   : BasePresenter<MovieGridView, MovieGridView.FromEvent, MovieGridView.ToEvent>(notificationManager) {
 
   init {

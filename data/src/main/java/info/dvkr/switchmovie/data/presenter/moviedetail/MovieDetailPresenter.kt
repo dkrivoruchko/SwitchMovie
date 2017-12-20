@@ -1,9 +1,9 @@
 package info.dvkr.switchmovie.data.presenter.moviedetail
 
+import info.dvkr.switchmovie.data.notifications.NotificationManager
 import info.dvkr.switchmovie.data.presenter.BasePresenter
-import info.dvkr.switchmovie.data.presenter.moviegrid.MovieGridView
 import info.dvkr.switchmovie.domain.model.Movie
-import info.dvkr.switchmovie.domain.notifications.NotificationManager
+import info.dvkr.switchmovie.domain.notifications.BaseNotificationManager
 import info.dvkr.switchmovie.domain.usecase.UseCases
 import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.channels.Channel

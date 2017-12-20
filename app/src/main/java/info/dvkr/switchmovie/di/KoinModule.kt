@@ -7,11 +7,11 @@ import info.dvkr.switchmovie.data.movie.repository.api.MovieApi
 import info.dvkr.switchmovie.data.movie.repository.api.MovieApiService
 import info.dvkr.switchmovie.data.movie.repository.local.MovieLocal
 import info.dvkr.switchmovie.data.movie.repository.local.MovieLocalService
+import info.dvkr.switchmovie.data.notifications.NotificationManager
 import info.dvkr.switchmovie.data.notifications.NotificationManagerImpl
 import info.dvkr.switchmovie.data.presenter.PresenterFactory
 import info.dvkr.switchmovie.data.settings.SettingsImpl
 import info.dvkr.switchmovie.domain.BuildConfig
-import info.dvkr.switchmovie.domain.notifications.NotificationManager
 import info.dvkr.switchmovie.domain.repositories.MovieRepository
 import info.dvkr.switchmovie.domain.settings.Settings
 import info.dvkr.switchmovie.domain.usecase.UseCases

@@ -1,9 +1,10 @@
 package info.dvkr.switchmovie.data.movie.repository.local
 
 import com.ironz.binaryprefs.Preferences
+import info.dvkr.switchmovie.data.notifications.NotificationManager
 import info.dvkr.switchmovie.data.utils.bindPreference
 import info.dvkr.switchmovie.domain.model.Movie
-import info.dvkr.switchmovie.domain.notifications.NotificationManager
+import info.dvkr.switchmovie.domain.notifications.BaseNotificationManager
 import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.sync.Mutex
 import kotlinx.coroutines.experimental.sync.withLock

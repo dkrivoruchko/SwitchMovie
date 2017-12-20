@@ -1,31 +1,24 @@
-package info.dvkr.switchmovie.domain.notifications
+package info.dvkr.switchmovie.data.notifications
 
 import android.support.annotation.Keep
 import info.dvkr.switchmovie.domain.model.Movie
+import info.dvkr.switchmovie.domain.notifications.BaseNotificationManager
 import kotlinx.coroutines.experimental.channels.SendChannel
 
 
-interface NotificationManager {
+interface NotificationManager: BaseNotificationManager {
 
-  @Keep sealed class Event {
+  @Keep sealed class Event : BaseNotificationManager.BaseEvent() {
     @Keep data class OnMovieAdd(val movie: Movie) : Event()
     @Keep data class OnMovieUpdate(val movie: Movie) : Event()
   }
 
-  fun offerEvent(event: Event)
-
-  @Keep sealed class Subscription {
+  @Keep sealed class Subscription : BaseNotificationManager.BaseSubscription() {
     @Keep data class OnMovieAdd(val channel: SendChannel<Notification>) : Subscription()
     @Keep data class OnMovieUpdate(val id: Int, val channel: SendChannel<Notification>) : Subscription()
   }
 
-  fun subscribe(subscription: Subscription, owner: String)
-
-  fun unSubscribe(subscription: Subscription, owner: String)
-
-  fun unSubscribeAll(owner: String)
-
-  @Keep sealed class Notification {
+  @Keep sealed class Notification : BaseNotificationManager.BaseNotification() {
     @Keep data class OnMovieUpdate(val movie: Movie) : Notification()
   }
 }

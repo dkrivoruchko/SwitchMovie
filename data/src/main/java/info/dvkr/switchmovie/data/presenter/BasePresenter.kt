@@ -1,8 +1,9 @@
 package info.dvkr.switchmovie.data.presenter
 
 import android.arch.lifecycle.ViewModel
+import info.dvkr.switchmovie.data.notifications.NotificationManager
 import info.dvkr.switchmovie.data.presenter.moviegrid.MovieGridView
-import info.dvkr.switchmovie.domain.notifications.NotificationManager
+import info.dvkr.switchmovie.domain.notifications.BaseNotificationManager
 import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.channels.SendChannel
@@ -59,11 +60,11 @@ constructor(private val notificationManager: NotificationManager) : ViewModel() 
   private fun <E : BaseView.BaseToEvent> notifyView(baseToEvent: E)
       = launch(UI) { view?.toEvent(baseToEvent) }
 
-  protected suspend fun subscribe(subscription: NotificationManager.Subscription) {
+  protected suspend fun subscribe(subscription: BaseNotificationManager.BaseSubscription) {
     notificationManager.subscribe(subscription, this.javaClass.canonicalName)
   }
 
-  protected suspend fun subscribeWithSwap(subscription: NotificationManager.Subscription) {
+  protected suspend fun subscribeWithSwap(subscription: BaseNotificationManager.BaseSubscription) {
     notificationManager.unSubscribe(subscription, this.javaClass.canonicalName)
     notificationManager.subscribe(subscription, this.javaClass.canonicalName)
   }
