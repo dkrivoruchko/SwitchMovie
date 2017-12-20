@@ -8,9 +8,9 @@ import kotlinx.coroutines.experimental.channels.SendChannel
 
 interface NotificationManager: BaseNotificationManager {
 
-  @Keep sealed class Event : BaseNotificationManager.BaseEvent() {
-    @Keep data class OnMovieAdd(val movie: Movie) : Event()
-    @Keep data class OnMovieUpdate(val movie: Movie) : Event()
+  @Keep sealed class ChangeEvent : BaseNotificationManager.BaseChangeEvent() {
+    @Keep data class OnMovieAdd(val movie: Movie) : ChangeEvent()
+    @Keep data class OnMovieUpdate(val movie: Movie) : ChangeEvent()
   }
 
   @Keep sealed class Subscription : BaseNotificationManager.BaseSubscription() {
@@ -19,6 +19,7 @@ interface NotificationManager: BaseNotificationManager {
   }
 
   @Keep sealed class Notification : BaseNotificationManager.BaseNotification() {
+    @Keep data class OnMovieAdd(val movie: Movie) : Notification()
     @Keep data class OnMovieUpdate(val movie: Movie) : Notification()
   }
 }

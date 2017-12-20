@@ -40,7 +40,9 @@ constructor(private val notificationManager: NotificationManager) : ViewModel() 
 
   override fun onCleared() {
     viewChannel.close()
-    notificationManager.unSubscribeAll(this.javaClass.canonicalName)
+    notificationManager.updateSubscription(
+        BaseNotificationManager.BaseSubscriptionEvent.UnSubscribeAll(this.javaClass.canonicalName)
+    )
     notificationChannel.close()
     super.onCleared()
   }
@@ -61,11 +63,15 @@ constructor(private val notificationManager: NotificationManager) : ViewModel() 
       = launch(UI) { view?.toEvent(baseToEvent) }
 
   protected suspend fun subscribe(subscription: BaseNotificationManager.BaseSubscription) {
-    notificationManager.subscribe(subscription, this.javaClass.canonicalName)
+    notificationManager.updateSubscription(
+        BaseNotificationManager.BaseSubscriptionEvent.Subscribe(subscription, this.javaClass.canonicalName)
+    )
   }
 
   protected suspend fun subscribeWithSwap(subscription: BaseNotificationManager.BaseSubscription) {
-    notificationManager.unSubscribe(subscription, this.javaClass.canonicalName)
-    notificationManager.subscribe(subscription, this.javaClass.canonicalName)
+    notificationManager.updateSubscription(
+        BaseNotificationManager.BaseSubscriptionEvent.UnSubscribe(subscription, this.javaClass.canonicalName)
+    )
+    subscribe(subscription)
   }
 }

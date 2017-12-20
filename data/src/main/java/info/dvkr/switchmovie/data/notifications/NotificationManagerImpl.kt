@@ -11,10 +11,10 @@ import kotlinx.coroutines.experimental.channels.actor
 class NotificationManagerImpl : BaseNotificationManagerImpl(), NotificationManager {
 
   init {
-    eventChannel = actor<BaseNotificationManager.BaseEvent>(CommonPool, Channel.UNLIMITED) {
+    changeEventChannel = actor<BaseNotificationManager.BaseChangeEvent>(CommonPool, Channel.UNLIMITED) {
       for (notification in this) when (notification) {
-        is NotificationManager.Event.OnMovieAdd -> notifyMovieAdd(notification.movie)
-        is NotificationManager.Event.OnMovieUpdate -> notifyMovieUpdate(notification.movie)
+        is NotificationManager.ChangeEvent.OnMovieAdd -> notifyMovieAdd(notification.movie)
+        is NotificationManager.ChangeEvent.OnMovieUpdate -> notifyMovieUpdate(notification.movie)
       }
     }
   }

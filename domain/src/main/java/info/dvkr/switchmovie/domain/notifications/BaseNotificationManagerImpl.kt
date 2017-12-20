@@ -1,69 +1,68 @@
 package info.dvkr.switchmovie.domain.notifications
 
+import android.support.annotation.Keep
 import kotlinx.coroutines.experimental.CommonPool
+import kotlinx.coroutines.experimental.CompletableDeferred
 import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.channels.SendChannel
-import kotlinx.coroutines.experimental.launch
-import kotlinx.coroutines.experimental.sync.Mutex
-import kotlinx.coroutines.experimental.sync.withLock
+import kotlinx.coroutines.experimental.channels.actor
 
 open class BaseNotificationManagerImpl : BaseNotificationManager {
-  @Volatile
-  private var subscriptions: List<Pair<BaseNotificationManager.BaseSubscription, String>> = emptyList()
 
-  private val subscriptionsMutex = Mutex()
+  protected lateinit var changeEventChannel: SendChannel<BaseNotificationManager.BaseChangeEvent>
 
-  protected lateinit var eventChannel: SendChannel<BaseNotificationManager.BaseEvent>
-
-  override fun offerEvent(event: BaseNotificationManager.BaseEvent) {
-    System.out.println("[${this.javaClass.simpleName}#${this.hashCode()}@${Thread.currentThread().name}] event: $event")
-    eventChannel.offer(event)
+  override fun offerChangeEvent(baseChangeEvent: BaseNotificationManager.BaseChangeEvent) {
+    System.out.println("[${this.javaClass.simpleName}#${this.hashCode()}@${Thread.currentThread().name}] baseChangeEvent: $baseChangeEvent")
+    changeEventChannel.offer(baseChangeEvent)
   }
 
-  override fun subscribe(baseSubscription: BaseNotificationManager.BaseSubscription, owner: String) {
-    launch {
-      subscriptionsMutex.withLock {
-        subscriptions
-            .toMutableList()
-            .apply { add(Pair(baseSubscription, owner)) }
-            .toList()
-            .run { subscriptions = this }
+  private val subscriptionChannel = actor<BaseNotificationManager.BaseSubscriptionEvent> {
+    val subscriptions: MutableList<Pair<BaseNotificationManager.BaseSubscription, String>> = mutableListOf()
+
+    for (subscriptionEvent in channel) when (subscriptionEvent) {
+
+      is BaseNotificationManager.BaseSubscriptionEvent.Subscribe -> {
+        subscriptions.add(Pair(subscriptionEvent.baseSubscription, subscriptionEvent.owner))
+      }
+
+      is BaseNotificationManager.BaseSubscriptionEvent.UnSubscribe -> {
+        val iterator = subscriptions.iterator()
+        while (iterator.hasNext()) {
+          val pair = iterator.next()
+          if (pair.first.javaClass.canonicalName == subscriptionEvent.baseSubscription.javaClass.canonicalName &&
+              pair.second == subscriptionEvent.owner) {
+            iterator.remove()
+          }
+        }
+      }
+
+      is BaseNotificationManager.BaseSubscriptionEvent.UnSubscribeAll -> {
+        val iterator = subscriptions.iterator()
+        while (iterator.hasNext()) {
+          val pair = iterator.next()
+          if (pair.second == subscriptionEvent.owner) iterator.remove()
+        }
+      }
+
+      is GetSubscriptions -> {
+        subscriptionEvent.response.complete(subscriptions.toList())
       }
     }
   }
 
-  override fun unSubscribe(baseSubscription: BaseNotificationManager.BaseSubscription, owner: String) {
-    launch {
-      subscriptionsMutex.withLock {
-        subscriptions
-            .asSequence()
-            .filterNot {
-              it.first.javaClass.canonicalName == baseSubscription.javaClass.canonicalName &&
-                  it.second == owner
-            }
-            .toList()
-            .run { subscriptions = this }
-      }
-    }
+  override fun updateSubscription(baseSubscriptionEvent: BaseNotificationManager.BaseSubscriptionEvent) {
+    System.out.println("[${this.javaClass.simpleName}#${this.hashCode()}@${Thread.currentThread().name}] baseSubscriptionEvent: $baseSubscriptionEvent")
+    subscriptionChannel.offer(baseSubscriptionEvent)
   }
 
-  override fun unSubscribeAll(owner: String) {
-    launch {
-      subscriptionsMutex.withLock {
-        subscriptions
-            .asSequence()
-            .filter { it.second != owner }
-            .toList()
-            .run { subscriptions = this }
-      }
-    }
-  }
+  @Keep private data class GetSubscriptions(
+      val response: CompletableDeferred<List<Pair<BaseNotificationManager.BaseSubscription, String>>>
+  ) : BaseNotificationManager.BaseSubscriptionEvent()
 
   fun notify(code: suspend (subscription: BaseNotificationManager.BaseSubscription) -> Unit) = async(CommonPool) {
-    subscriptionsMutex.withLock {
-      subscriptions.forEach {
-        code(it.first)
-      }
-    }
+    val response = CompletableDeferred<List<Pair<BaseNotificationManager.BaseSubscription, String>>>()
+    subscriptionChannel.offer(GetSubscriptions(response))
+    val subscriptions = response.await()
+    subscriptions.forEach { code(it.first) }
   }
 }

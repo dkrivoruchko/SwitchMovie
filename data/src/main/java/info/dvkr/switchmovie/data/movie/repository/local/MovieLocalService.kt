@@ -4,7 +4,6 @@ import com.ironz.binaryprefs.Preferences
 import info.dvkr.switchmovie.data.notifications.NotificationManager
 import info.dvkr.switchmovie.data.utils.bindPreference
 import info.dvkr.switchmovie.domain.model.Movie
-import info.dvkr.switchmovie.domain.notifications.BaseNotificationManager
 import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.sync.Mutex
 import kotlinx.coroutines.experimental.sync.withLock
@@ -46,7 +45,7 @@ class MovieLocalService(private val notificationManager: NotificationManager,
           localMovieList = MovieLocal.LocalList(this)
         }
 
-    inMovieList.forEach { notificationManager.offerEvent(NotificationManager.Event.OnMovieAdd(it)) }
+    inMovieList.forEach { notificationManager.offerChangeEvent(NotificationManager.ChangeEvent.OnMovieAdd(it)) }
   }
 
   suspend fun updateMovie(inMovie: Movie): Int = movieMutex.withLock {
@@ -64,7 +63,7 @@ class MovieLocalService(private val notificationManager: NotificationManager,
     mutableList[index] = localMovie
     localMovieList = MovieLocal.LocalList(mutableList.toList())
 
-    notificationManager.offerEvent(NotificationManager.Event.OnMovieUpdate(inMovie))
+    notificationManager.offerChangeEvent(NotificationManager.ChangeEvent.OnMovieUpdate(inMovie))
 
     return index
   }

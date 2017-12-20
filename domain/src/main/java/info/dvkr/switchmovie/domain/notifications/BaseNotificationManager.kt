@@ -1,19 +1,24 @@
 package info.dvkr.switchmovie.domain.notifications
 
 import android.support.annotation.Keep
+import kotlinx.coroutines.experimental.CompletableDeferred
 
 
 interface BaseNotificationManager {
 
-  @Keep open class BaseEvent
-  @Keep open class BaseSubscription
+  @Keep open class BaseChangeEvent
+
+  fun offerChangeEvent(baseChangeEvent: BaseChangeEvent)
+
   @Keep open class BaseNotification
 
-  fun offerEvent(event: BaseEvent)
+  @Keep open class BaseSubscription
 
-  fun subscribe(baseSubscription: BaseSubscription, owner: String)
+  @Keep open class BaseSubscriptionEvent {
+    @Keep data class Subscribe(val baseSubscription: BaseSubscription, val owner: String) : BaseSubscriptionEvent()
+    @Keep data class UnSubscribe(val baseSubscription: BaseSubscription, val owner: String) : BaseSubscriptionEvent()
+    @Keep data class UnSubscribeAll(val owner: String) : BaseSubscriptionEvent()
+  }
 
-  fun unSubscribe(baseSubscription: BaseSubscription, owner: String)
-
-  fun unSubscribeAll(owner: String)
+  fun updateSubscription(baseSubscriptionEvent: BaseSubscriptionEvent)
 }
