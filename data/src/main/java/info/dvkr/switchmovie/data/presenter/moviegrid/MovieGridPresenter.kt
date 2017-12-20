@@ -36,8 +36,8 @@ open class MovieGridPresenter internal constructor(private val useCases: UseCase
   }
 
   private suspend fun getMovieById(id: Int) = handleFromEvent(true) {
+    subscribeWithSwap(NotificationManager.Subscription.OnMovieUpdate(id, notificationChannel))
     val movie = useCases.get(UseCases.Case.GetMovieById(id))
-    subscribe(NotificationManager.Subscription.OnMovieUpdate(movie.id, notificationChannel))
     MovieGridView.ToEvent.OnMovie(movie)
   }
 
@@ -50,5 +50,4 @@ open class MovieGridPresenter internal constructor(private val useCases: UseCase
   private suspend fun onMovieUpdate(movie: Movie) = handleFromEvent {
     MovieGridView.ToEvent.OnMovie(movie)
   }
-
 }

@@ -15,7 +15,7 @@ constructor(private val notificationManager: NotificationManager) : ViewModel() 
   protected lateinit var viewChannel: SendChannel<R>
   protected lateinit var notificationChannel: SendChannel<NotificationManager.Notification>
 
-  protected var view: T? = null
+  private var view: T? = null
 
   init {
     Timber.i("[${this.javaClass.simpleName}#${this.hashCode()}@${Thread.currentThread().name}] Init")
@@ -56,14 +56,15 @@ constructor(private val notificationManager: NotificationManager) : ViewModel() 
     }
   }
 
-  private fun <K : BaseView.BaseToEvent> notifyView(baseToEvent: K)
+  private fun <E : BaseView.BaseToEvent> notifyView(baseToEvent: E)
       = launch(UI) { view?.toEvent(baseToEvent) }
 
+  protected suspend fun subscribe(subscription: NotificationManager.Subscription) {
+    notificationManager.subscribe(subscription, this.javaClass.canonicalName)
+  }
 
-  protected suspend fun subscribe(subscription: NotificationManager.Subscription,
-                                  unSubscribeCurrent: Boolean = true) {
-
-    if (unSubscribeCurrent) notificationManager.unSubscribe(subscription, this.javaClass.canonicalName)
+  protected suspend fun subscribeWithSwap(subscription: NotificationManager.Subscription) {
+    notificationManager.unSubscribe(subscription, this.javaClass.canonicalName)
     notificationManager.subscribe(subscription, this.javaClass.canonicalName)
   }
 }

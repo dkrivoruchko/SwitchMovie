@@ -28,8 +28,8 @@ class MovieDetailPresenter internal constructor(private val useCases: UseCases,
   }
 
   private suspend fun getMovieById(id: Int) = handleFromEvent {
+    subscribe(NotificationManager.Subscription.OnMovieUpdate(id, notificationChannel))
     val movie = useCases.get(UseCases.Case.GetMovieById(id))
-    subscribe(NotificationManager.Subscription.OnMovieUpdate(movie.id, notificationChannel))
     MovieDetailView.ToEvent.OnMovie(movie)
   }
 

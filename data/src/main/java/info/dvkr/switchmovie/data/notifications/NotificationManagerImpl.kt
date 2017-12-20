@@ -19,13 +19,12 @@ class NotificationManagerImpl : NotificationManager {
 
   private val subscriptionsMutex = Mutex()
 
-  private val eventChannel =
-      actor<NotificationManager.Event>(CommonPool, Channel.UNLIMITED) {
-        for (notification in this) when (notification) {
-          is NotificationManager.Event.OnMovieAdd -> notifyMovieAdd(notification.movie)
-          is NotificationManager.Event.OnMovieUpdate -> notifyMovieUpdate(notification.movie)
-        }
-      }
+  private val eventChannel = actor<NotificationManager.Event>(CommonPool, Channel.UNLIMITED) {
+    for (notification in this) when (notification) {
+      is NotificationManager.Event.OnMovieAdd -> notifyMovieAdd(notification.movie)
+      is NotificationManager.Event.OnMovieUpdate -> notifyMovieUpdate(notification.movie)
+    }
+  }
 
   override fun offerEvent(event: NotificationManager.Event) {
     Timber.d("[${this.javaClass.simpleName}#${this.hashCode()}@${Thread.currentThread().name}] event: $event")
@@ -75,7 +74,7 @@ class NotificationManagerImpl : NotificationManager {
   private suspend fun notifyMovieAdd(movie: Movie) {
   }
 
-  private suspend fun notifyMovieUpdate(movie: Movie) = async {
+  private suspend fun notifyMovieUpdate(movie: Movie) = async(CommonPool) {
     subscriptionsMutex.withLock {
       subscriptions.get()
           .forEach {
