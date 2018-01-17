@@ -1,7 +1,6 @@
 package info.dvkr.switchmovie.data.presenter
 
 import android.support.annotation.Keep
-import android.support.annotation.UiThread
 
 interface BaseView {
     @Keep open class BaseFromEvent

@@ -10,7 +10,8 @@ If data available offline then no request send to server.<br>
 User may start/run application offline, available offline data will be shown or error message for failed server request.<br>
 Next page data loaded automatically as soon as user scroll to the end of the list.<br>
 Pull to refresh feature also available (it rewrite local cache data).<br>
-Basic loading animation implemented.
+Basic loading animation implemented.<br>
+Implemented notification functionality (based on subscription) to notify Presenters for events if subscribed for.
 
 **Please note:**
 * Original task screenshots are from Apple device and are not relevant for android.
@@ -20,17 +21,16 @@ Basic loading animation implemented.
 * No loading animation for image loading.
 * Error handling is very basic.
 
-Application is based on Clean Architecture and MVP pattern and uses:
+**Application is based on Clean Architecture and MVP pattern and uses:**
 * [Kotlin](https://kotlinlang.org)
+* [Kotlin coroutines](https://github.com/Kotlin/kotlinx.coroutines) (Yes, no RxJava - see [version-one](https://github.com/dkrivoruchko/SwitchMovie/tree/version-one) branch for it)
 * [Android support libraries](https://developer.android.com/topic/libraries/support-library/index.html)
-* [Dagger 2](https://github.com/google/dagger)
-* [RxJava 2](https://github.com/ReactiveX/RxJava)
-* [RxRelay](https://github.com/JakeWharton/RxRelay)
-* [RxAndroid](https://github.com/ReactiveX/RxAndroid)
+* [Android Architecture Components](https://developer.android.com/topic/libraries/architecture/index.html) (ViewModel)
+* [Kion](https://github.com/Ekito/koin) (Yes, no Dagger 2 - see [version-one](https://github.com/dkrivoruchko/SwitchMovie/tree/version-one) branch for it)
 * [Retrofit 2](https://github.com/square/retrofit)
 * [Glide 3](https://github.com/bumptech/glide/tree/3.0) / [Glide Transformations](https://github.com/wasabeef/glide-transformations)
 * [Binary Preferences](https://github.com/iamironz/binaryprefs)
-
+* [LeakCanary](https://github.com/square/leakcanary)
 
 **Possible things to improve:**
 

@@ -1,7 +1,6 @@
 package info.dvkr.switchmovie.data.notifications
 
 import info.dvkr.switchmovie.domain.model.Movie
-import info.dvkr.switchmovie.domain.notifications.BaseNotificationManager
 import info.dvkr.switchmovie.domain.notifications.BaseNotificationManagerImpl
 import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.channels.Channel

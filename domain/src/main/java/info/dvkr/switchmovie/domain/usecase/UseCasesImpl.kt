@@ -4,14 +4,13 @@ import info.dvkr.switchmovie.domain.model.Movie
 import info.dvkr.switchmovie.domain.repositories.MovieRepository
 import info.dvkr.switchmovie.domain.utils.Utils
 import kotlinx.coroutines.experimental.CommonPool
-import kotlinx.coroutines.experimental.run
 import kotlinx.coroutines.experimental.withContext
 
 
 class UseCasesImpl(private val movieRepository: MovieRepository) : UseCases {
 
     @Suppress("UNCHECKED_CAST")
-    suspend override fun <T> get(case: UseCases.Case<T>): T = withContext(CommonPool) {
+    override suspend fun <T> get(case: UseCases.Case<T>): T = withContext(CommonPool) {
         System.out.println("[${Utils.getLogPrefix(this)}] case: $case")
 
         when (case) {
