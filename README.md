@@ -4,6 +4,10 @@
 
 **Description**
 
+*Initially app was developed as a test task for Android developer.*<br>
+*Now I'm using it as a base to test new technologies/libs/ideas.*<br>
+*Master branch represent the most resent of them<br>*
+
 Application shows now playing movies.<br>
 It downloads movies data from [The Movie Database API](http://docs.themoviedb.apiary.io/#) and stores it for offline access.<br>
 If data available offline then no request send to server.<br>
@@ -11,7 +15,7 @@ User may start/run application offline, available offline data will be shown or 
 Next page data loaded automatically as soon as user scroll to the end of the list.<br>
 Pull to refresh feature also available (it rewrite local cache data).<br>
 Basic loading animation implemented.<br>
-Implemented notification functionality (based on subscription) to notify Presenters for events if subscribed for.
+Implemented notification functionality (based on subscription) to notify Presenters for events it's subscribed for.
 
 **Please note:**
 * Original task screenshots are from Apple device and are not relevant for android.
