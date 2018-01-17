@@ -14,7 +14,6 @@ interface MovieDetailView: BaseView {
 
   // From MovieDetailPresenter to MovieDetailView
   @Keep sealed class ToEvent: BaseView.BaseToEvent() {
-    @Keep data class OnRefresh(val isRefreshing: Boolean) : ToEvent()
     @Keep data class OnMovie(val movie: Movie) : ToEvent()
     @Keep data class OnError(val error: Throwable) : ToEvent()
   }

@@ -1,77 +1,93 @@
 package info.dvkr.switchmovie.data.presenter
 
 import android.arch.lifecycle.ViewModel
+import android.support.annotation.CallSuper
+import android.support.annotation.MainThread
 import info.dvkr.switchmovie.data.notifications.NotificationManager
-import info.dvkr.switchmovie.data.presenter.moviegrid.MovieGridView
 import info.dvkr.switchmovie.domain.notifications.BaseNotificationManager
-import kotlinx.coroutines.experimental.android.UI
+import info.dvkr.switchmovie.domain.utils.Utils
 import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.channels.SendChannel
-import kotlinx.coroutines.experimental.launch
 import timber.log.Timber
+import java.util.concurrent.atomic.AtomicInteger
+import kotlin.coroutines.experimental.CoroutineContext
 
-open class BasePresenter<T : BaseView, R : BaseView.BaseFromEvent, in S : BaseView.BaseToEvent>
-constructor(private val notificationManager: NotificationManager) : ViewModel() {
+open class BasePresenter<in T : BaseView, R : BaseView.BaseFromEvent, in S : BaseView.BaseToEvent>
+constructor(protected val crtContext: CoroutineContext,
+            protected val notificationManager: NotificationManager) : ViewModel() {
 
-  protected lateinit var viewChannel: SendChannel<R>
-  protected lateinit var notificationChannel: SendChannel<NotificationManager.Notification>
+    protected lateinit var viewChannel: SendChannel<R>
+    protected lateinit var notificationChannel: SendChannel<NotificationManager.Notification>
 
-  private var view: T? = null
+    private var view: T? = null
 
-  init {
-    Timber.i("[${this.javaClass.simpleName}#${this.hashCode()}@${Thread.currentThread().name}] Init")
-  }
+    protected val isWorkInProgress = AtomicInteger(0)
 
-  fun offer(fromEvent: R) {
-    Timber.d("[${this.javaClass.simpleName}#${this.hashCode()}@${Thread.currentThread().name}] fromEvent: $fromEvent")
-    viewChannel.offer(fromEvent)
-  }
-
-  open fun attach(newView: T) {
-    Timber.i("[${this.javaClass.simpleName}#${this.hashCode()}@${Thread.currentThread().name}] Attach")
-    view?.let { detach() }
-    view = newView
-  }
-
-  open fun detach() {
-    Timber.i("[${this.javaClass.simpleName}#${this.hashCode()}@${Thread.currentThread().name}] Detach")
-    view = null
-  }
-
-  override fun onCleared() {
-    viewChannel.close()
-    notificationManager.updateSubscription(
-        BaseNotificationManager.BaseSubscriptionEvent.UnSubscribeAll(this.javaClass.canonicalName)
-    )
-    notificationChannel.close()
-    super.onCleared()
-  }
-
-  protected suspend fun handleFromEvent(showRefresh: Boolean = false,
-                                        code: suspend () -> S) = async {
-    try {
-      if (showRefresh) notifyView(BaseView.BaseToEvent.OnRefresh(true))
-      notifyView(code())
-    } catch (t: Throwable) {
-      notifyView(MovieGridView.ToEvent.OnError(t))
-    } finally {
-      if (showRefresh) notifyView(BaseView.BaseToEvent.OnRefresh(false))
+    init {
+        Timber.i("[${Utils.getLogPrefix(this)}] Init")
     }
-  }
 
-  private fun <E : BaseView.BaseToEvent> notifyView(baseToEvent: E)
-      = launch(UI) { view?.toEvent(baseToEvent) }
+    @MainThread
+    fun offer(fromEvent: R) {
+        Timber.d("[${Utils.getLogPrefix(this)}] fromEvent: ${fromEvent.javaClass.simpleName}")
+        viewChannel.offer(fromEvent)
+    }
 
-  protected suspend fun subscribe(subscription: BaseNotificationManager.BaseSubscription) {
-    notificationManager.updateSubscription(
-        BaseNotificationManager.BaseSubscriptionEvent.Subscribe(subscription, this.javaClass.canonicalName)
-    )
-  }
+    @CallSuper
+    open fun attach(newView: T) {
+        Timber.i("[${Utils.getLogPrefix(this)}] Attach")
+        view?.let { detach() }
+        view = newView
 
-  protected suspend fun subscribeWithSwap(subscription: BaseNotificationManager.BaseSubscription) {
-    notificationManager.updateSubscription(
-        BaseNotificationManager.BaseSubscriptionEvent.UnSubscribe(subscription, this.javaClass.canonicalName)
-    )
-    subscribe(subscription)
-  }
+        notifyView(BaseView.BaseToEvent.OnProgress(isWorkInProgress.get() > 0))
+    }
+
+    @CallSuper
+    open fun detach() {
+        Timber.i("[${Utils.getLogPrefix(this)}] Detach")
+        view = null
+    }
+
+    @CallSuper
+    override fun onCleared() {
+        viewChannel.close()
+        notificationManager.updateSubscription(
+                BaseNotificationManager.BaseSubscriptionEvent.UnSubscribeAll(this.javaClass.canonicalName)
+        )
+        notificationChannel.close()
+        super.onCleared()
+    }
+
+    protected suspend fun handleFromEvent(showWorkInProgress: Boolean = false,
+                                          code: suspend () -> S) = async {
+        try {
+            if (showWorkInProgress) {
+                notifyView(BaseView.BaseToEvent.OnProgress(isWorkInProgress.incrementAndGet() > 0))
+            }
+
+            notifyView(code())
+        } catch (t: Throwable) {
+            Timber.e(t)
+            notifyView(BaseView.BaseToEvent.OnError(t))
+        } finally {
+            if (showWorkInProgress) {
+                notifyView(BaseView.BaseToEvent.OnProgress(isWorkInProgress.decrementAndGet() > 0))
+            }
+        }
+    }
+
+    protected fun <E : BaseView.BaseToEvent> notifyView(baseToEvent: E) = view?.toEvent(baseToEvent)
+
+    protected suspend fun subscribe(subscription: BaseNotificationManager.BaseSubscription) {
+        notificationManager.updateSubscription(
+                BaseNotificationManager.BaseSubscriptionEvent.Subscribe(subscription, this.javaClass.canonicalName)
+        )
+    }
+
+    protected suspend fun subscribeWithSwap(subscription: BaseNotificationManager.BaseSubscription) {
+        notificationManager.updateSubscription(
+                BaseNotificationManager.BaseSubscriptionEvent.UnSubscribe(subscription, this.javaClass.canonicalName)
+        )
+        subscribe(subscription)
+    }
 }
