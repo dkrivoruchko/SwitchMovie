@@ -7,11 +7,13 @@
 *Initially app was developed as a test task for Android developer.*<br>
 *Now I'm using it as a base to test new technologies/libs/ideas.*<br>
 *Master branch represent the most resent of them<br>*
+*See [Version-Two](https://github.com/dkrivoruchko/SwitchMovie/tree/version-one) for quite old code,
+[Version-One](https://github.com/dkrivoruchko/SwitchMovie/tree/version-one) very old code.<br>*
 
 Application shows now playing movies.<br>
 It downloads movies data from [The Movie Database API](http://docs.themoviedb.apiary.io/#) and stores it for offline access.<br>
-If data available offline then no request send to server.<br>
-User may start/run application offline, available offline data will be shown or error message for failed server request.<br>
+If data available offline then no moviesUseCaseRequest send to server.<br>
+User may start/run application offline, available offline data will be shown or error message for failed server moviesUseCaseRequest.<br>
 Next page data loaded automatically as soon as user scroll to the end of the list.<br>
 Pull to refresh feature also available (it rewrite local cache data).<br>
 Basic loading animation implemented.<br>

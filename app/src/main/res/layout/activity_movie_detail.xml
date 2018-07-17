@@ -7,7 +7,7 @@
     android:background="#000"
     tools:context="info.dvkr.switchmovie.ui.moviedetail.MovieDetailActivity">
 
-    <ImageView
+    <android.support.v7.widget.AppCompatImageView
         android:id="@+id/movieDetailBackground"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -40,13 +40,13 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <ImageView
+        <android.support.v7.widget.AppCompatImageView
             android:id="@+id/movieDetailImage"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:scaleType="centerCrop" />
 
-        <ImageView
+        <android.support.v7.widget.AppCompatImageView
             android:id="@+id/movieDetailStar"
             android:layout_width="48dp"
             android:layout_height="48dp"
@@ -57,7 +57,7 @@
             app:srcCompat="@drawable/ic_star_black_24dp" />
     </android.support.v7.widget.CardView>
 
-    <TextView
+    <android.support.v7.widget.AppCompatTextView
         android:id="@+id/textViewScore"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -70,7 +70,7 @@
         app:layout_constraintStart_toStartOf="@+id/guidelineVertical"
         app:layout_constraintTop_toTopOf="@+id/cardView" />
 
-    <TextView
+    <android.support.v7.widget.AppCompatTextView
         android:id="@+id/movieDetailScore"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -83,7 +83,7 @@
         app:layout_constraintTop_toBottomOf="@+id/textViewScore"
         tools:text="8.2" />
 
-    <TextView
+    <android.support.v7.widget.AppCompatTextView
         android:id="@+id/textViewRating"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -97,7 +97,7 @@
         app:layout_constraintTop_toBottomOf="@+id/movieDetailScore"
         app:layout_constraintVertical_chainStyle="packed" />
 
-    <TextView
+    <android.support.v7.widget.AppCompatTextView
         android:id="@+id/movieDetailRating"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -112,7 +112,7 @@
         app:layout_constraintVertical_chainStyle="packed"
         tools:text="R" />
 
-    <TextView
+    <android.support.v7.widget.AppCompatTextView
         android:id="@+id/textViewReleaseDate"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -124,7 +124,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guidelineVertical" />
 
-    <TextView
+    <android.support.v7.widget.AppCompatTextView
         android:id="@+id/movieDetailReleaseDate"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -145,7 +145,7 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.45" />
 
-    <TextView
+    <android.support.v7.widget.AppCompatTextView
         android:id="@+id/movieDetailTitle"
         android:layout_width="0dp"
         android:layout_height="48dp"
@@ -168,7 +168,7 @@
         android:background="@color/colorMovieDetailHeader"
         app:layout_constraintTop_toTopOf="@+id/movieDetailOverview" />
 
-    <TextView
+    <android.support.v7.widget.AppCompatTextView
         android:id="@+id/movieDetailOverview"
         android:layout_width="0dp"
         android:layout_height="0dp"
