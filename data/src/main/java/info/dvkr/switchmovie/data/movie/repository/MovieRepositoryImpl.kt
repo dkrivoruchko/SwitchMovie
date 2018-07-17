@@ -5,59 +5,40 @@ import info.dvkr.switchmovie.data.movie.repository.api.MovieApiService
 import info.dvkr.switchmovie.data.movie.repository.local.MovieLocalService
 import info.dvkr.switchmovie.domain.model.Movie
 import info.dvkr.switchmovie.domain.repositories.MovieRepository
-import info.dvkr.switchmovie.domain.utils.Utils
-import kotlinx.coroutines.experimental.CommonPool
-import kotlinx.coroutines.experimental.withContext
-import timber.log.Timber
+import info.dvkr.switchmovie.domain.usecase.UseCases
 
-class MovieRepositoryImpl(private val movieApiService: MovieApiService,
-                          private val movieLocalService: MovieLocalService) : MovieRepository {
-
-    @Suppress("UNCHECKED_CAST")
-    override suspend fun <T> get(request: MovieRepository.Request<T>): T = withContext(CommonPool) {
-        Timber.d("[${Utils.getLogPrefix(this)}] request: $request")
-        when (request) {
-            is MovieRepository.Request.GetMoviesFromIndex -> getMoviesFromIndex(request.from) as T
-            is MovieRepository.Request.GetMovieById -> getMovieById(request.id) as T
-            is MovieRepository.Request.UpdateMovie -> updateMovie(request.movie) as T
-        }
-    }
+class MovieRepositoryImpl(
+    private val movieApiService: MovieApiService,
+    private val movieLocalService: MovieLocalService
+) : MovieRepository.RW {
 
     @Throws(Throwable::class)
-    private suspend fun getMoviesFromIndex(from: Int): MovieRepository.MoviesOnRange {
+    override suspend fun getMoviesFromIndex(from: Int): UseCases.MoviesOnRange {
         val pages: Int = from / MovieApi.MOVIES_PER_PAGE
         // Checking for local data
-        movieLocalService.getMovies()
-                .asSequence()
-                .drop(pages * MovieApi.MOVIES_PER_PAGE)
-                .take(MovieApi.MOVIES_PER_PAGE)
-                .toList()
-                .run {
-                    // Have Local data
-                    if (this.isNotEmpty()) this
-                    // No Local data.
-                    else movieApiService.getMovies(pages + 1).also { movieLocalService.addMovies(it) }
-                }
-                .run {
-                    val from = pages * MovieApi.MOVIES_PER_PAGE
-                    val range = Pair(from, from + this.size)
-                    return MovieRepository.MoviesOnRange(range, this)
-                }
+        movieLocalService.getMovies().asSequence()
+            .drop(pages * MovieApi.MOVIES_PER_PAGE)
+            .take(MovieApi.MOVIES_PER_PAGE)
+            .toList()
+            .run {
+                // Have Local data
+                if (this.isNotEmpty()) this
+                // No Local data.
+                else movieApiService.getMovies(pages + 1).also { movieLocalService.addMovies(it) }
+            }
+            .run {
+                val from = pages * MovieApi.MOVIES_PER_PAGE
+                val range = Pair(from, from + this.size)
+                return UseCases.MoviesOnRange(range, this)
+            }
     }
 
-    @Throws(IllegalArgumentException::class)
-    private suspend fun getMovieById(id: Int): Movie =
-            movieLocalService.getMovieById(id)
-                    .run {
-                        if (this == null) throw IllegalArgumentException("Movie not found")
-                        this
-                    }
+    override suspend fun getMovieById(id: Int): Movie? = movieLocalService.getMovieById(id)
 
     @Throws(IllegalArgumentException::class)
-    private suspend fun updateMovie(movie: Movie): Int =
-            movieLocalService.updateMovie(movie)
-                    .run {
-                        if (this < 0) throw IllegalArgumentException("Updating movie. Movie not found")
-                        this
-                    }
+    override suspend fun updateMovie(movie: Movie): Int = movieLocalService.updateMovie(movie)
+        .run {
+            if (this < 0) throw IllegalArgumentException("Updating movie. Movie not found")
+            this
+        }
 }

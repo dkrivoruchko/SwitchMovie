@@ -10,11 +10,9 @@ import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.channels.SendChannel
 import timber.log.Timber
 import java.util.concurrent.atomic.AtomicInteger
-import kotlin.coroutines.experimental.CoroutineContext
 
 open class BasePresenter<in T : BaseView, R : BaseView.BaseFromEvent, in S : BaseView.BaseToEvent>
-constructor(protected val crtContext: CoroutineContext,
-            protected val notificationManager: NotificationManager) : ViewModel() {
+constructor(protected val notificationManager: NotificationManager) : ViewModel() {
 
     protected lateinit var viewChannel: SendChannel<R>
     protected lateinit var notificationChannel: SendChannel<NotificationManager.Notification>
@@ -52,14 +50,16 @@ constructor(protected val crtContext: CoroutineContext,
     override fun onCleared() {
         viewChannel.close()
         notificationManager.updateSubscription(
-                BaseNotificationManager.BaseSubscriptionEvent.UnSubscribeAll(this.javaClass.canonicalName)
+            BaseNotificationManager.BaseSubscriptionEvent.UnSubscribeAll(this.javaClass.canonicalName)
         )
         notificationChannel.close()
         super.onCleared()
     }
 
-    protected suspend fun handleFromEvent(showWorkInProgress: Boolean = false,
-                                          code: suspend () -> S) = async {
+    protected suspend fun handleFromEvent(
+        showWorkInProgress: Boolean = false,
+        code: suspend () -> S
+    ) = async {
         try {
             if (showWorkInProgress) {
                 notifyView(BaseView.BaseToEvent.OnProgress(isWorkInProgress.incrementAndGet() > 0))
@@ -80,13 +80,19 @@ constructor(protected val crtContext: CoroutineContext,
 
     protected suspend fun subscribe(subscription: BaseNotificationManager.BaseSubscription) {
         notificationManager.updateSubscription(
-                BaseNotificationManager.BaseSubscriptionEvent.Subscribe(subscription, this.javaClass.canonicalName)
+            BaseNotificationManager.BaseSubscriptionEvent.Subscribe(
+                subscription,
+                this.javaClass.canonicalName
+            )
         )
     }
 
     protected suspend fun subscribeWithSwap(subscription: BaseNotificationManager.BaseSubscription) {
         notificationManager.updateSubscription(
-                BaseNotificationManager.BaseSubscriptionEvent.UnSubscribe(subscription, this.javaClass.canonicalName)
+            BaseNotificationManager.BaseSubscriptionEvent.UnSubscribe(
+                subscription,
+                this.javaClass.canonicalName
+            )
         )
         subscribe(subscription)
     }

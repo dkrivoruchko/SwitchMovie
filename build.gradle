@@ -1,9 +1,9 @@
 buildscript {
     ext {
-        kotlin_version = '1.2.20'
-        coroutine_version = '0.21.2'
+        kotlin_version = '1.2.30'
+        coroutine_version = '0.22.5'
 
-        build_tools = '27.0.2'
+        build_tools = '27.0.3'
         compile_sdk = 27
         min_sdk = 21
         target_sdk = 27
@@ -12,13 +12,13 @@ buildscript {
         version_name = '2.0'
 
 
-        support_version = '27.0.2'
-        lifecycle_version = '1.0.0'
-        koin_version = '0.8.0'
-        okhttp_version = '3.9.1'
-        retrofit_version = '2.3.0'
+        support_version = '27.1.0'
+        lifecycle_version = '1.1.0'
+        koin_version = '0.9.1'
+        okhttp_version = '3.10.0'
+        retrofit_version = '2.4.0'
         binaryprefs_version = '1.0.0-BETA-2'
-        timber_version = '4.6.0'
+        timber_version = '4.6.1'
     }
 
     repositories {

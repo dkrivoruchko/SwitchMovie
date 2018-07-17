@@ -18,7 +18,8 @@ open class BaseNotificationManagerImpl : BaseNotificationManager {
     }
 
     private val subscriptionChannel = actor<BaseNotificationManager.BaseSubscriptionEvent> {
-        val subscriptions: MutableList<Pair<BaseNotificationManager.BaseSubscription, String>> = mutableListOf()
+        val subscriptions: MutableList<Pair<BaseNotificationManager.BaseSubscription, String>> =
+            mutableListOf()
 
         for (subscriptionEvent in channel) when (subscriptionEvent) {
 
@@ -31,7 +32,7 @@ open class BaseNotificationManagerImpl : BaseNotificationManager {
                 while (iterator.hasNext()) {
                     val pair = iterator.next()
                     if (pair.first.javaClass.canonicalName == subscriptionEvent.baseSubscription.javaClass.canonicalName &&
-                            pair.second == subscriptionEvent.owner) {
+                        pair.second == subscriptionEvent.owner) {
                         iterator.remove()
                     }
                 }
@@ -57,13 +58,15 @@ open class BaseNotificationManagerImpl : BaseNotificationManager {
     }
 
     @Keep private data class GetSubscriptions(
-            val response: CompletableDeferred<List<Pair<BaseNotificationManager.BaseSubscription, String>>>
+        val response: CompletableDeferred<List<Pair<BaseNotificationManager.BaseSubscription, String>>>
     ) : BaseNotificationManager.BaseSubscriptionEvent()
 
-    fun notify(code: suspend (subscription: BaseNotificationManager.BaseSubscription) -> Unit) = async(CommonPool) {
-        val response = CompletableDeferred<List<Pair<BaseNotificationManager.BaseSubscription, String>>>()
-        subscriptionChannel.offer(GetSubscriptions(response))
-        val subscriptions = response.await()
-        subscriptions.forEach { code(it.first) }
-    }
+    fun notify(code: suspend (subscription: BaseNotificationManager.BaseSubscription) -> Unit) =
+        async(CommonPool) {
+            val response =
+                CompletableDeferred<List<Pair<BaseNotificationManager.BaseSubscription, String>>>()
+            subscriptionChannel.offer(GetSubscriptions(response))
+            val subscriptions = response.await()
+            subscriptions.forEach { code(it.first) }
+        }
 }

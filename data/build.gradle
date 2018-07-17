@@ -3,6 +3,7 @@ apply plugin: 'kotlin-android'
 
 android {
     compileSdkVersion compile_sdk
+    buildToolsVersion build_tools
 
     defaultConfig {
         minSdkVersion min_sdk
@@ -44,9 +45,12 @@ dependencies {
     implementation "com.github.iamironz:binaryprefs:$binaryprefs_version"
 
     // Retrofit
-    implementation 'com.squareup.okhttp3:okhttp:3.9.1'
+    implementation "com.squareup.moshi:moshi:1.5.0"
+    implementation "com.squareup.moshi:moshi-kotlin:1.5.0"
+    implementation "com.squareup.okhttp3:okhttp:$okhttp_version"
     implementation "com.squareup.retrofit2:retrofit:$retrofit_version"
     implementation "com.squareup.retrofit2:converter-moshi:$retrofit_version"
+    implementation "com.jakewharton.retrofit:retrofit2-kotlin-coroutines-experimental-adapter:1.0.0"
 
     implementation "com.jakewharton.timber:timber:$timber_version"
 }
