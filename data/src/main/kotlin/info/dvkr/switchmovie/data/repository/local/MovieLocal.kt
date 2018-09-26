@@ -9,35 +9,36 @@ object MovieLocal {
     @Entity(tableName = "movie_table")
     data class MovieDb(
         @PrimaryKey(autoGenerate = false) @ColumnInfo(name = "id") var id: Int = 0,
-        @ColumnInfo(name = "poster_path") var posterPath: String = "",
+        @ColumnInfo(name = "posterPath") var posterPath: String = "",
         @ColumnInfo(name = "title") var title: String = "",
         @ColumnInfo(name = "overview") var overview: String = "",
-        @ColumnInfo(name = "release_date") var releaseDate: String = "",
-        @ColumnInfo(name = "vote_average") var voteAverage: String = "",
+        @ColumnInfo(name = "releaseDate") var releaseDate: String = "",
+        @ColumnInfo(name = "voteAverage") var voteAverage: String = "",
         @ColumnInfo(name = "popularity") var popularity: Float = 0.0F,
-        @ColumnInfo(name = "is_star") var isStar: Boolean = false
+        @ColumnInfo(name = "isStar") var isStar: Boolean = false
     )
 
     object MovieConverter {
-        @TypeConverter // TODO
-        fun fromMovieToMovieDb(movie: Movie) =
+        @TypeConverter
+        fun fromMovieToMovieDb(movie: Movie): MovieDb =
             with(movie) { MovieDb(id, posterPath, title, overview, releaseDate, voteAverage, popularity, isStar) }
 
-        @TypeConverter // TODO
-        fun fromMovieDbToMovie(movieDb: MovieDb) =
+        @TypeConverter
+        fun fromMovieDbToMovie(movieDb: MovieDb): Movie =
             with(movieDb) { Movie(id, posterPath, title, overview, releaseDate, voteAverage, popularity, isStar) }
     }
 
     @Dao
+    @TypeConverters(MovieConverter::class)
     interface MovieDao {
-        @Query("SELECT * FROM movie_table where id = :arg0")
-        fun getMovieById(movieId: Int): MovieDb?
+        @Query("SELECT * FROM movie_table where id = :movieId")
+        fun getMovieById(movieId: Int): Movie?
 
         @Query("SELECT * FROM movie_table where id = :movieId")
-        fun getMovieByIdLiveData(movieId: Int): LiveData<MovieDb>
+        fun getMovieByIdLiveData(movieId: Int): LiveData<Movie>
 
         @Query("SELECT * FROM movie_table ORDER BY popularity DESC")
-        fun getAll(): LiveData<List<MovieDb>> // TODO Not Lvedata
+        fun getAll(): LiveData<List<Movie>>
 
         @Insert(onConflict = OnConflictStrategy.REPLACE)
         fun insert(movie: MovieDb)

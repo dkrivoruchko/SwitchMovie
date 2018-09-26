@@ -2,11 +2,11 @@ package info.dvkr.switchmovie
 
 import android.app.Application
 import android.os.StrictMode
+import com.datatheorem.android.trustkit.TrustKit
+import com.jakewharton.threetenabp.AndroidThreeTen
 import com.squareup.leakcanary.LeakCanary
 import info.dvkr.switchmovie.di.apiKoinModule
 import info.dvkr.switchmovie.di.baseKoinModule
-import info.dvkr.switchmovie.di.databaseKoinModule
-import info.dvkr.switchmovie.domain.utils.Utils
 import org.koin.android.ext.android.startKoin
 import org.koin.log.Logger
 import timber.log.Timber
@@ -17,7 +17,6 @@ class MovieGridApp : Application() {
 
         // Set up Timber
         Timber.plant(Timber.DebugTree())
-        Timber.v("[${Utils.getLogPrefix(this)}] onCreate")
 
         val defaultHandler = Thread.getDefaultUncaughtExceptionHandler()
         Thread.setDefaultUncaughtExceptionHandler { thread: Thread, throwable: Throwable ->
@@ -46,14 +45,18 @@ class MovieGridApp : Application() {
         if (LeakCanary.isInAnalyzerProcess(this)) return
         LeakCanary.install(this)
 
+        AndroidThreeTen.init(this)
+
+        TrustKit.initializeWithNetworkSecurityConfiguration(this)
+
         // Set up DI
         startKoin(this,
-            listOf(baseKoinModule, apiKoinModule, databaseKoinModule),
+            listOf(baseKoinModule, apiKoinModule),
             loadProperties = true,
             logger = object : Logger {
-                override fun debug(msg: String) = Timber.d("Koin: $msg")
-                override fun err(msg: String) = Timber.e("Koin: $msg")
-                override fun info(msg: String) = Timber.i("Koin: $msg")
+                override fun debug(msg: String) = Timber.tag("Koin").d(msg)
+                override fun err(msg: String) = Timber.tag("Koin").e(msg)
+                override fun info(msg: String) = Timber.tag("Koin").i(msg)
             })
 
     }

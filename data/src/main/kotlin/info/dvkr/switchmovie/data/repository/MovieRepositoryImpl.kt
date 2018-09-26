@@ -5,16 +5,15 @@ import info.dvkr.switchmovie.data.repository.api.MovieApiService
 import info.dvkr.switchmovie.data.repository.local.MovieLocalService
 import info.dvkr.switchmovie.domain.model.Movie
 import info.dvkr.switchmovie.domain.repositories.MovieRepository
-import info.dvkr.switchmovie.domain.usecase.base.Result
+import info.dvkr.switchmovie.domain.utils.Either
+import org.threeten.bp.LocalDate
 
 class MovieRepositoryImpl(
     private val movieApiService: MovieApiService,
     private val movieLocalService: MovieLocalService
 ) : MovieRepository.RW {
 
-    override fun clearLoadState() = movieApiService.clearLoadState()
-
-    override suspend fun loadMoreMovies(): Result<List<Movie>> = movieApiService.loadMoreMovies()
+    // RO
 
     override fun getMovies(): LiveData<List<Movie>> = movieLocalService.getMovies()
 
@@ -22,9 +21,19 @@ class MovieRepositoryImpl(
 
     override fun getMovieByIdLiveData(movieId: Int): LiveData<Movie> = movieLocalService.getMovieByIdLiveData(movieId)
 
+    override fun getLastMovieUpdateDate(): LocalDate = movieLocalService.getLastMovieUpdateDate()
+
+    // RW
+
+    override fun clearLoadState() = movieApiService.clearLoadState()
+
+    override suspend fun loadMoreMovies(): Either<Throwable, List<Movie>> = movieApiService.loadMoreMovies()
+
     override fun addMovies(inMovieList: List<Movie>) = movieLocalService.addMovies(inMovieList)
 
     override fun updateMovie(movie: Movie) = movieLocalService.updateMovie(movie)
 
     override fun deleteMovies() = movieLocalService.deleteAll()
+
+    override fun setLastMovieUpdateDate(localDate: LocalDate) = movieLocalService.setLastMovieUpdateDate(localDate)
 }

@@ -18,9 +18,9 @@ import retrofit2.http.Query
         @Json(name = "poster_path") val posterPath: String?,
         @Json(name = "title") val title: String,
         @Json(name = "overview") val overview: String,
-        @Json(name = "release_date") val releaseDate: String,
-        @Json(name = "vote_average") val voteAverage: String,
-        @Json(name = "popularity") val popularity: Float
+        @Json(name = "release_date") val releaseDate: String, // "2018-09-13"
+        @Json(name = "vote_average") val voteAverage: String, // 5.6
+        @Json(name = "popularity") val popularity: Float      // 219.771
     ) {
         fun toMovie(apiBaseImageUrl: String): Movie = Movie(
             id,

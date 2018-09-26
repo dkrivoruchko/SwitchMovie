@@ -1,6 +1,7 @@
 package info.dvkr.switchmovie.di
 
 import android.net.TrafficStats
+import com.datatheorem.android.trustkit.TrustKit
 import info.dvkr.switchmovie.data.repository.api.MovieApiService
 import okhttp3.Cache
 import okhttp3.OkHttpClient
@@ -15,6 +16,10 @@ val apiKoinModule = module {
     single {
         OkHttpClient().newBuilder()
             .cache(Cache(androidContext().applicationContext.cacheDir, cacheSize))
+            .sslSocketFactory(
+                TrustKit.getInstance().getSSLSocketFactory(getProperty("API_BASE_DOMAIN")),
+                TrustKit.getInstance().getTrustManager(getProperty("API_BASE_DOMAIN"))
+            )
             .addInterceptor { chain ->
                 TrafficStats.setThreadStatsTag(50); chain.proceed(chain.request())
             }

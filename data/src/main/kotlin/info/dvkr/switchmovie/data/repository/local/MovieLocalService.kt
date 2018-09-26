@@ -1,66 +1,66 @@
 package info.dvkr.switchmovie.data.repository.local
 
-//import info.dvkr.switchmovie.data.notifications.NotificationManager
 import android.arch.lifecycle.LiveData
-import android.arch.lifecycle.Transformations
+import com.ironz.binaryprefs.Preferences
+import info.dvkr.switchmovie.data.utils.bindPreference
 import info.dvkr.switchmovie.domain.model.Movie
-import info.dvkr.switchmovie.domain.utils.Utils
+import info.dvkr.switchmovie.domain.utils.getTag
+import org.threeten.bp.LocalDate
 import timber.log.Timber
 
 class MovieLocalService(
-    private val movieDao: MovieLocal.MovieDao
-//        private val notificationManager: NotificationManager
-//    preferences: Preferences
+    private val movieDao: MovieLocal.MovieDao,
+    private val moviePreferences: Preferences
 ) {
 
-    fun getMovies(): LiveData<List<Movie>> {
-        Timber.d("[${Utils.getLogPrefix(this)}] getMovies")
+    private var lastMovieUpdateDate: Long by bindPreference(
+        moviePreferences, "KEY_LAST_MOVIE_UPDATE_DATE", LocalDate.now().minusDays(2).toEpochDay()
+    )
 
-        return Transformations.map(movieDao.getAll()) { list ->
-            list.map { MovieLocal.MovieConverter.fromMovieDbToMovie(it) }
-        }
+
+    fun getMovies(): LiveData<List<Movie>> {
+        Timber.tag(getTag("getMovies")).d("Invoked")
+        return movieDao.getAll()
     }
 
     fun getMovieById(movieId: Int): Movie? {
-        Timber.d("[${Utils.getLogPrefix(this)}] getMovieById: $movieId")
-
-        return movieDao.getMovieById(movieId)?.let { MovieLocal.MovieConverter.fromMovieDbToMovie(it) }
+        Timber.tag(getTag("getMovieById")).d(movieId.toString())
+        return movieDao.getMovieById(movieId)
     }
 
     fun getMovieByIdLiveData(movieId: Int): LiveData<Movie> {
-        Timber.d("[${Utils.getLogPrefix(this)}] getMovieByIdLiveData: $movieId")
+        Timber.tag(getTag("getMovieByIdLiveData")).d(movieId.toString())
 
-        return Transformations.map(movieDao.getMovieByIdLiveData(movieId)) { movieDb ->
-            MovieLocal.MovieConverter.fromMovieDbToMovie(movieDb)
-        }
+        return movieDao.getMovieByIdLiveData(movieId)
+    }
+
+    fun getLastMovieUpdateDate(): LocalDate {
+        Timber.tag(getTag("getLastMovieUpdateDate")).d("Invoked")
+
+        return LocalDate.ofEpochDay(lastMovieUpdateDate)
     }
 
     fun addMovies(inMovieList: List<Movie>) {
-        Timber.d("[${Utils.getLogPrefix(this)}] addMovies: $inMovieList")
+        Timber.tag(getTag("addMovies")).d(inMovieList.toString())
 
         movieDao.insertAll(inMovieList.map { MovieLocal.MovieConverter.fromMovieToMovieDb(it) })
-
-        // TODO
-//        inMovieList.forEach {
-//            notificationManager.offerChangeEvent(
-//                NotificationManager.ChangeEvent.OnMovieAdd(
-//                    it
-//                )
-//            )
-//        }
     }
 
     fun updateMovie(inMovie: Movie) {
-        Timber.d("[${Utils.getLogPrefix(this)}] updateMovie: $inMovie")
+        Timber.tag(getTag("updateMovie")).d(inMovie.toString())
 
         movieDao.insert(inMovie.let { MovieLocal.MovieConverter.fromMovieToMovieDb(it) })
-
-//        notificationManager.offerChangeEvent(NotificationManager.ChangeEvent.OnMovieUpdate(inMovie)) TODO
     }
 
     fun deleteAll() {
-        Timber.d("[${Utils.getLogPrefix(this)}] deleteAll")
+        Timber.tag(getTag("deleteAll")).d("Invoked")
+
         movieDao.deleteAll()
     }
 
+    fun setLastMovieUpdateDate(localDate: LocalDate) {
+        Timber.tag(getTag("setLastMovieUpdateDate")).d(localDate.toString())
+
+        lastMovieUpdateDate = localDate.toEpochDay()
+    }
 }

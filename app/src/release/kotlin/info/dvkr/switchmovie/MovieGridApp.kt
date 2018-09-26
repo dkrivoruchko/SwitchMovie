@@ -2,10 +2,10 @@ package info.dvkr.switchmovie
 
 import android.app.Application
 import android.util.Log
+import com.datatheorem.android.trustkit.TrustKit
+import com.jakewharton.threetenabp.AndroidThreeTen
 import info.dvkr.switchmovie.di.apiKoinModule
 import info.dvkr.switchmovie.di.baseKoinModule
-import info.dvkr.switchmovie.di.databaseKoinModule
-import info.dvkr.switchmovie.domain.utils.Utils
 import org.koin.android.ext.android.startKoin
 import org.koin.log.Logger
 import timber.log.Timber
@@ -15,8 +15,6 @@ class MovieGridApp : Application() {
     private object CrashReportingTree : Timber.Tree() {
         override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
             if (priority == Log.VERBOSE || priority == Log.DEBUG) return
-//            Crashlytics.log(priority, tag, message)
-//            error?.let { Crashlytics.logException(it) }
         }
     }
 
@@ -25,7 +23,6 @@ class MovieGridApp : Application() {
 
         // Set up Timber
         Timber.plant(CrashReportingTree)
-        Timber.v("[${Utils.getLogPrefix(this)}] onCreate")
 
         val defaultHandler = Thread.getDefaultUncaughtExceptionHandler()
         Thread.setDefaultUncaughtExceptionHandler { thread: Thread, throwable: Throwable ->
@@ -33,14 +30,18 @@ class MovieGridApp : Application() {
             defaultHandler.uncaughtException(thread, throwable)
         }
 
+        AndroidThreeTen.init(this)
+
+        TrustKit.initializeWithNetworkSecurityConfiguration(this)
+
         // Set up DI
         startKoin(this,
-            listOf(baseKoinModule, apiKoinModule, databaseKoinModule),
+            listOf(baseKoinModule, apiKoinModule),
             loadProperties = true,
             logger = object : Logger {
-                override fun debug(msg: String) = Timber.d("Koin: $msg")
-                override fun err(msg: String) = Timber.e("Koin: $msg")
-                override fun info(msg: String) = Timber.i("Koin: $msg")
+                override fun debug(msg: String) = Timber.tag("Koin").d(msg)
+                override fun err(msg: String) = Timber.tag("Koin").e(msg)
+                override fun info(msg: String) = Timber.tag("Koin").i(msg)
             })
     }
 }

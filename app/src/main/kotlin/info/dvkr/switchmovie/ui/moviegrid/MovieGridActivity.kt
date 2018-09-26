@@ -24,7 +24,7 @@ import info.dvkr.switchmovie.data.viewmodel.moviegrid.MovieGridModel
 import info.dvkr.switchmovie.data.viewmodel.moviegrid.MovieGridViewItem
 import info.dvkr.switchmovie.data.viewmodel.moviegrid.MovieGridViewModel
 import info.dvkr.switchmovie.domain.model.Movie
-import info.dvkr.switchmovie.domain.utils.Utils
+import info.dvkr.switchmovie.domain.utils.getTag
 import info.dvkr.switchmovie.ui.BaseActivity
 import info.dvkr.switchmovie.ui.moviedetail.MovieDetailActivity
 import kotlinx.android.extensions.LayoutContainer
@@ -34,45 +34,6 @@ import org.koin.android.viewmodel.ext.android.viewModel
 import timber.log.Timber
 
 class MovieGridActivity : BaseActivity() {
-
-    private class MovieViewItemHolder(
-        override val containerView: View,
-        private val onItemClick: (Int) -> Unit,
-        private val onItemStartClick: (Int) -> Unit
-    ) : RecyclerView.ViewHolder(containerView), LayoutContainer {
-
-        fun bind(item: MovieGridViewItem) {
-            Glide.with(containerView.context.applicationContext).load(item.posterPath).into(movieItemImage)
-            movieItemImage.setOnClickListener { onItemClick.invoke(item.id) }
-
-            movieGridItemViewStar.imageTintList = if (item.isStar)
-                ColorStateList.valueOf(ContextCompat.getColor(containerView.context, R.color.colorAccent))
-            else
-                ColorStateList.valueOf(ContextCompat.getColor(containerView.context, R.color.colorWhite))
-            movieGridItemViewStar.setOnClickListener { onItemStartClick.invoke(item.id) }
-        }
-    }
-
-    private class MovieAdapter(
-        private val onItemClick: (Int) -> Unit,
-        private val onItemStartClick: (Int) -> Unit
-    ) : ListAdapter<MovieGridViewItem, MovieViewItemHolder>(
-        object : DiffUtil.ItemCallback<MovieGridViewItem>() {
-            override fun areItemsTheSame(oldItem: MovieGridViewItem, newItem: MovieGridViewItem) =
-                oldItem.id == newItem.id
-
-            override fun areContentsTheSame(oldItem: MovieGridViewItem, newItem: MovieGridViewItem) =
-                oldItem == newItem
-        }
-    ) {
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = MovieViewItemHolder(
-            LayoutInflater.from(parent.context).inflate(R.layout.movie_item, parent, false),
-            onItemClick, onItemStartClick
-        )
-
-        override fun onBindViewHolder(holder: MovieViewItemHolder, position: Int) = holder.bind(getItem(position))
-    }
-
 
     private val viewModel by viewModel<MovieGridViewModel>()
     private lateinit var movieAdapter: MovieAdapter
@@ -107,7 +68,7 @@ class MovieGridActivity : BaseActivity() {
         }
 
         viewModel.getMovieGridModelLiveData().observe(this, Observer<MovieGridModel> { movieGridModel ->
-            Timber.e("[${Utils.getLogPrefix(this)}] getMovieGridModelLiveData: $movieGridModel")
+            Timber.tag(getTag("getMovieGridModelLiveData")).d(movieGridModel.toString())
 
             if (movieGridModel == null) return@Observer
 
@@ -119,7 +80,7 @@ class MovieGridActivity : BaseActivity() {
                     list.map { MovieGridViewItem(it.id, it.posterPath, it.isStar) }
                 }
                 movieGridViewItemLiveData?.observe(this, Observer {
-                    Timber.e("[${Utils.getLogPrefix(this)}] getMovieGridModelLiveData.submitList: $it")
+                    Timber.tag(getTag("getMovieGridModelLiveData.submitList")).d(it.toString())
                     movieAdapter.submitList(it)
                 })
             }
@@ -160,7 +121,7 @@ class MovieGridActivity : BaseActivity() {
                 }
             }
 
-            movieGridSwipeRefresh.isRefreshing = movieGridModel.isWorkInProgress
+            movieGridSwipeRefresh.isRefreshing = movieGridModel.workInProgressCounter > 0
 
             movieGridModel.error?.run {
                 Toast.makeText(applicationContext, message, Toast.LENGTH_LONG).show()
@@ -171,27 +132,45 @@ class MovieGridActivity : BaseActivity() {
             viewModel.onViewEvent(MovieGridEvent.ViewRefresh)
         }
 
-        viewModel.onViewEvent(MovieGridEvent.ViewRefresh)
-
-
-//        selectedMovieId = savedInstanceState?.getInt(SELECTED_MOVIE_ID) ?: -1
-//        if (selectedMovieId > 0)
-//            viewModel.offer(MovieGridView.ViewEvent.GetMovieById(selectedMovieId))
-//        viewModel.loadMore()
+        viewModel.onViewEvent(MovieGridEvent.ViewUpdate)
     }
 
-//    companion object {
-//        const val SELECTED_MOVIE_ID = "SELECTED_MOVIE_ID"
-//    }
-//
-//
-//    private var currentRange: Pair<Int, Int> = Pair(0, 0)
-//    private var selectedMovieId = -1
 
-//
-//    override fun onSaveInstanceState(outState: Bundle?) {
-//        outState?.putInt(SELECTED_MOVIE_ID, selectedMovieId)
-//        super.onSaveInstanceState(outState)
-//    }
+    private class MovieViewItemHolder(
+        override val containerView: View,
+        private val onItemClick: (Int) -> Unit,
+        private val onItemStartClick: (Int) -> Unit
+    ) : RecyclerView.ViewHolder(containerView), LayoutContainer {
 
+        fun bind(item: MovieGridViewItem) {
+            Glide.with(containerView.context.applicationContext).load(item.posterPath).into(movieItemImage)
+            movieItemImage.setOnClickListener { onItemClick.invoke(item.id) }
+
+            movieGridItemViewStar.imageTintList = if (item.isStar)
+                ColorStateList.valueOf(ContextCompat.getColor(containerView.context, R.color.colorAccent))
+            else
+                ColorStateList.valueOf(ContextCompat.getColor(containerView.context, R.color.colorWhite))
+            movieGridItemViewStar.setOnClickListener { onItemStartClick.invoke(item.id) }
+        }
+    }
+
+    private class MovieAdapter(
+        private val onItemClick: (Int) -> Unit,
+        private val onItemStartClick: (Int) -> Unit
+    ) : ListAdapter<MovieGridViewItem, MovieViewItemHolder>(
+        object : DiffUtil.ItemCallback<MovieGridViewItem>() {
+            override fun areItemsTheSame(oldItem: MovieGridViewItem, newItem: MovieGridViewItem) =
+                oldItem.id == newItem.id
+
+            override fun areContentsTheSame(oldItem: MovieGridViewItem, newItem: MovieGridViewItem) =
+                oldItem == newItem
+        }
+    ) {
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = MovieViewItemHolder(
+            LayoutInflater.from(parent.context).inflate(R.layout.movie_item, parent, false),
+            onItemClick, onItemStartClick
+        )
+
+        override fun onBindViewHolder(holder: MovieViewItemHolder, position: Int) = holder.bind(getItem(position))
+    }
 }

@@ -9,15 +9,13 @@ import android.os.Bundle
 import android.support.v4.content.ContextCompat
 import android.widget.Toast
 import com.bumptech.glide.Glide
-import com.bumptech.glide.request.RequestOptions
 import info.dvkr.switchmovie.R
 import info.dvkr.switchmovie.data.viewmodel.moviedetail.MovieDetailEvent
 import info.dvkr.switchmovie.data.viewmodel.moviedetail.MovieDetailModel
 import info.dvkr.switchmovie.data.viewmodel.moviedetail.MovieDetailViewModel
 import info.dvkr.switchmovie.domain.model.Movie
-import info.dvkr.switchmovie.domain.utils.Utils
+import info.dvkr.switchmovie.domain.utils.getTag
 import info.dvkr.switchmovie.ui.BaseActivity
-import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.android.synthetic.main.activity_movie_detail.*
 import org.koin.android.viewmodel.ext.android.viewModel
 import timber.log.Timber
@@ -50,7 +48,7 @@ class MovieDetailActivity : BaseActivity() {
         setContentView(R.layout.activity_movie_detail)
 
         viewModel.getMovieDetailModelLiveData().observe(this, Observer<MovieDetailModel> { movieDetailModel ->
-            Timber.e("[${Utils.getLogPrefix(this)}] getMovieDetailModelLiveData: $movieDetailModel")
+            Timber.tag(getTag("getMovieDetailModelLiveData")).d(movieDetailModel.toString())
 
             if (movieDetailModel == null) return@Observer
 
@@ -60,29 +58,24 @@ class MovieDetailActivity : BaseActivity() {
                 movieLiveData = movieDetailModel.movieLiveData
 
                 movieLiveData?.observe(this, Observer MovieObserver@{ movie ->
-                    Timber.e("[${Utils.getLogPrefix(this)}] movieLiveData: $movie")
+                    Timber.tag(getTag("movieLiveData")).d(movie.toString())
 
                     if (movie == null) return@MovieObserver
                     title = movie.title
 
                     Glide.with(applicationContext)
                         .load(movie.posterPath)
-                        .apply(RequestOptions.bitmapTransform(BlurTransformation(20)))
-                        .into(movieDetailBackground)
-
-                    Glide.with(applicationContext)
-                        .load(movie.posterPath)
                         .into(movieDetailImage)
 
                     movieDetailScore.text = movie.voteAverage
-                    movieDetailRating.text = "Unkown"
+                    movieDetailRating.text = movie.popularity.toString()
 
                     try {
                         val date = dateParser.parse(movie.releaseDate)
                         movieDetailReleaseDate.text = dateFormatter.format(date)
                     } catch (ex: ParseException) {
                         movieDetailReleaseDate.text = movie.releaseDate
-//                    toEvent(MovieDetailView.ToEvent.OnError(ex))
+                        viewModel.onViewEvent(MovieDetailEvent.Error(ex))
                     }
 
                     movieDetailTitle.text = movie.title
@@ -97,7 +90,7 @@ class MovieDetailActivity : BaseActivity() {
                 })
             }
 
-//            movieGridSwipeRefresh.isRefreshing = movieGridModel.isWorkInProgress
+            movieDetailwipeRefresh.isRefreshing = movieDetailModel.workInProgressCounter > 0
 
             movieDetailModel.error?.run {
                 Toast.makeText(applicationContext, message, Toast.LENGTH_LONG).show()

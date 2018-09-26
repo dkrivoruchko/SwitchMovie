@@ -1,6 +1,7 @@
 package info.dvkr.switchmovie.domain.usecase.base
 
-import info.dvkr.switchmovie.domain.utils.Utils
+import android.support.annotation.CallSuper
+import info.dvkr.switchmovie.domain.utils.getTag
 import kotlinx.coroutines.experimental.CoroutineExceptionHandler
 import kotlinx.coroutines.experimental.CoroutineScope
 import kotlinx.coroutines.experimental.Dispatchers
@@ -10,13 +11,20 @@ import timber.log.Timber
 import kotlin.coroutines.experimental.CoroutineContext
 
 abstract class BaseUseCase : CoroutineScope {
+
     private val parentJob: Job = Job()
+
     override val coroutineContext: CoroutineContext
-        get() = parentJob + Dispatchers.Default + CoroutineExceptionHandler { _, exception ->
-            Timber.e("BaseUseCase: [${Utils.getLogPrefix(this)}] Caught $exception with suppressed ${exception.suppressed?.contentToString()}")
-        }
+        get() = parentJob + Dispatchers.Default + CoroutineExceptionHandler { _, exception -> onException(exception) }
 
-    protected abstract val sendChannel: SendChannel<UseCaseRequest<*>>
+    @CallSuper
+    protected fun onException(exception: Throwable) {
+        Timber.tag(getTag())
+            .e(exception, "Caught $exception with suppressed ${exception.suppressed?.contentToString()}")
+    }
 
-    fun offer(request: UseCaseRequest<*>) = sendChannel.offer(request)
+    protected abstract val sendChannel: SendChannel<BaseUseCaseRequest<*>>
+
+    @Throws(Exception::class)
+    fun offer(request: BaseUseCaseRequest<*>) = sendChannel.offer(request)
 }
