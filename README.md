@@ -27,7 +27,7 @@ Application users some sort of State Machine in ViewModel to manage View states.
 * No loading animation for image loading.
 * Error handling is very basic.
 
-**Application is based on Clean Architecture and Android Architecture Components pattern and uses:**
+**Application is based on Clean Architecture and Android Architecture Components and uses:**
 * [Kotlin](https://kotlinlang.org)
 * [Kotlin coroutines](https://github.com/Kotlin/kotlinx.coroutines) (Yes, no RxJava - see [version-one](https://github.com/dkrivoruchko/SwitchMovie/tree/version-one) branch for it)
 * [Android Architecture Components](https://developer.android.com/topic/libraries/architecture/index.html) (ViewModel, LiveData, Room, Navigation)
