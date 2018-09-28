@@ -7,6 +7,7 @@ import info.dvkr.switchmovie.domain.usecase.base.BaseUseCase
 import info.dvkr.switchmovie.domain.usecase.base.BaseUseCaseRequest
 import info.dvkr.switchmovie.domain.utils.Either
 import info.dvkr.switchmovie.domain.utils.getTag
+import kotlinx.coroutines.experimental.CoroutineName
 import kotlinx.coroutines.experimental.channels.SendChannel
 import kotlinx.coroutines.experimental.channels.actor
 import org.threeten.bp.LocalDate
@@ -25,22 +26,23 @@ class MoviesUseCase(
         data class InvertMovieStarById(val id: Int) : Request<Unit>()
     }
 
-    override val sendChannel: SendChannel<BaseUseCaseRequest<*>> = actor(coroutineContext, capacity = 8) {
-        for (request in this) try {
-            Timber.tag(this@MoviesUseCase.getTag(request.javaClass.simpleName)).d(request.toString())
+    override val sendChannel: SendChannel<BaseUseCaseRequest<*>> =
+        actor(coroutineContext + CoroutineName("MoviesUseCaseActor"), capacity = 8) {
+            for (request in this) try {
+                Timber.tag(this@MoviesUseCase.getTag(request.javaClass.simpleName)).d(request.toString())
 
-            when (request) {
-                is Request.GetMoviesLiveData -> getMoviesLiveData(request)
-                is Request.GetMovieByIdLiveData -> getMovieByIdLiveData(request)
-                is Request.ClearMovies -> clearMovies(request)
-                is Request.UpdateMovies -> updateMovies(request)
-                is Request.LoadMoreMovies -> loadMoreMovies(request)
-                is Request.InvertMovieStarById -> invertMovieStarById(request)
+                when (request) {
+                    is Request.GetMoviesLiveData -> getMoviesLiveData(request)
+                    is Request.GetMovieByIdLiveData -> getMovieByIdLiveData(request)
+                    is Request.ClearMovies -> clearMovies(request)
+                    is Request.UpdateMovies -> updateMovies(request)
+                    is Request.LoadMoreMovies -> loadMoreMovies(request)
+                    is Request.InvertMovieStarById -> invertMovieStarById(request)
+                }
+            } catch (ex: Exception) {
+                request.sendResult(Either.Left(ex))
             }
-        } catch (ex: Exception) {
-            request.sendResult(Either.Left(ex))
         }
-    }
 
     private fun getMoviesLiveData(request: Request.GetMoviesLiveData) {
         request.sendResult(Either.Right(movieRepository.getMovies()))

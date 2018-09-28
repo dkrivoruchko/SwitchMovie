@@ -6,6 +6,7 @@ import com.spotify.mobius.EventSource
 import com.spotify.mobius.MobiusLoop
 import com.spotify.mobius.disposables.Disposable
 import info.dvkr.switchmovie.domain.utils.getTag
+import kotlinx.coroutines.experimental.CoroutineName
 import kotlinx.coroutines.experimental.Job
 import kotlinx.coroutines.experimental.channels.SendChannel
 import kotlinx.coroutines.experimental.channels.actor
@@ -17,13 +18,13 @@ abstract class BaseViewStateViewModel<M, E, F> : BaseViewModel() {
     protected abstract val loop: MobiusLoop<M, E, F>
 
     protected inline fun runEffect(job: Job = Job(parentJob), crossinline block: suspend () -> Unit) {
-        launch(coroutineContext + job) { block.invoke() }
+        launch(coroutineContext + job + CoroutineName("runEffect")) { block.invoke() }
     }
 
     private lateinit var eventSourceChannel: SendChannel<E>
 
     protected val eventSource = EventSource<E> { eventConsumer ->
-        eventSourceChannel = actor(coroutineContext, capacity = 8) {
+        eventSourceChannel = actor(coroutineContext + CoroutineName("eventSourceActor"), capacity = 8) {
             for (eventSource in this) {
                 Timber.tag(getTag("eventSource")).d(eventSource.toString())
                 eventConsumer.accept(eventSource)

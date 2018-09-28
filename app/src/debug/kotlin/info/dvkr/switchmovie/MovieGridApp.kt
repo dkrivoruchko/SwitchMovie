@@ -45,6 +45,8 @@ class MovieGridApp : Application() {
         if (LeakCanary.isInAnalyzerProcess(this)) return
         LeakCanary.install(this)
 
+//        System.setProperty("kotlinx.coroutines.debug", "on")
+
         AndroidThreeTen.init(this)
 
         TrustKit.initializeWithNetworkSecurityConfiguration(this)
