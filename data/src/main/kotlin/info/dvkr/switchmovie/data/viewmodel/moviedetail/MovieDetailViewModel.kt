@@ -55,7 +55,7 @@ class MovieDetailViewModel(
     }
 
     private suspend fun effectGetMovieById(movieId: Int, eventConsumer: Consumer<MovieDetailEvent>) =
-        MoviesUseCase.Request.GetMovieByIdLiveData(movieId).process(moviesUseCase).onResult { resultEither ->
+        MoviesUseCase.Request.GetMovieByIdLiveData(movieId).process(moviesUseCase) { resultEither ->
             Timber.tag(getTag("effectGetMovieById")).d(resultEither.toString())
 
             resultEither.either(

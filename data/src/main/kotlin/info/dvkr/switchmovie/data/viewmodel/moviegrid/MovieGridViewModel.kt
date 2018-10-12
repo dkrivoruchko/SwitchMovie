@@ -105,7 +105,7 @@ class MovieGridViewModel(
     }
 
     private suspend fun effectInit(eventConsumer: Consumer<MovieGridEvent>) =
-        MoviesUseCase.Request.GetMoviesLiveData().process(moviesUseCase).onResult { resultEither ->
+        MoviesUseCase.Request.GetMoviesLiveData().process(moviesUseCase) { resultEither ->
             Timber.tag(getTag("effectInit")).d(resultEither.toString())
 
             resultEither.either(
@@ -115,7 +115,7 @@ class MovieGridViewModel(
         }
 
     private suspend fun effectRefresh(eventConsumer: Consumer<MovieGridEvent>) =
-        MoviesUseCase.Request.ClearMovies().process(moviesUseCase).onResult { resultEither ->
+        MoviesUseCase.Request.ClearMovies().process(moviesUseCase) { resultEither ->
             Timber.tag(getTag("effectRefresh")).d(resultEither.toString())
 
             resultEither.either(
@@ -125,7 +125,7 @@ class MovieGridViewModel(
         }
 
     private suspend fun effectUpdate(eventConsumer: Consumer<MovieGridEvent>) =
-        MoviesUseCase.Request.UpdateMovies().process(moviesUseCase).onResult { resultEither ->
+        MoviesUseCase.Request.UpdateMovies().process(moviesUseCase) { resultEither ->
             Timber.tag(getTag("effectUpdate")).d(resultEither.toString())
 
             resultEither.either(
@@ -135,7 +135,7 @@ class MovieGridViewModel(
         }
 
     private suspend fun effectLoadMore() =
-        MoviesUseCase.Request.LoadMoreMovies().process(moviesUseCase).onResult { resultEither ->
+        MoviesUseCase.Request.LoadMoreMovies().process(moviesUseCase) { resultEither ->
             Timber.tag(getTag("effectLoadMore")).d(resultEither.toString())
 
             resultEither.either(
@@ -149,15 +149,14 @@ class MovieGridViewModel(
         eventConsumer: Consumer<MovieGridEvent>
     ) {
         delay(3000)
-        MoviesUseCase.Request.InvertMovieStarById(invertMovieStarByIdJob.first).process(moviesUseCase)
-            .onResult { resultEither ->
-                Timber.tag(getTag("effectInvertMovieStarById")).d(resultEither.toString())
+        MoviesUseCase.Request.InvertMovieStarById(invertMovieStarByIdJob.first).process(moviesUseCase) { resultEither ->
+            Timber.tag(getTag("effectInvertMovieStarById")).d(resultEither.toString())
 
-                resultEither.either(
-                    { sendEventInternal(MovieGridEvent.Error(it)) },
-                    { eventConsumer.accept(MovieGridEvent.InvertMovieStarByIdDone(invertMovieStarByIdJob.first)) }
-                )
-            }
+            resultEither.either(
+                { sendEventInternal(MovieGridEvent.Error(it)) },
+                { eventConsumer.accept(MovieGridEvent.InvertMovieStarByIdDone(invertMovieStarByIdJob.first)) }
+            )
+        }
     }
 
     override val loop: MobiusLoop<MovieGridModel, MovieGridEvent, MovieGridEffect> =
