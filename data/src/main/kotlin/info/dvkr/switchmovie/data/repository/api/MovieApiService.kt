@@ -1,14 +1,16 @@
 package info.dvkr.switchmovie.data.repository.api
 
+import com.elvishew.xlog.XLog
 import info.dvkr.switchmovie.domain.model.Movie
 import info.dvkr.switchmovie.domain.utils.Either
-import info.dvkr.switchmovie.domain.utils.getTag
+import info.dvkr.switchmovie.domain.utils.getLog
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
-import retrofit2.HttpException
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
+import retrofit2.create
 import ru.gildor.coroutines.retrofit.await
-import timber.log.Timber
 
 
 class MovieApiService(
@@ -17,17 +19,13 @@ class MovieApiService(
     private val apiKey: String,
     private val apiBaseImageUrl: String
 ) {
-    private val movieApi: MovieApi.Service
-
-    init {
-        val apiRetrofit = Retrofit.Builder()
+    private val movieApi: MovieApi.Service =
+        Retrofit.Builder()
             .client(okHttpClient)
             .baseUrl(apiBaseUrl)
             .addConverterFactory(MoshiConverterFactory.create())
             .build()
-
-        movieApi = apiRetrofit.create(MovieApi.Service::class.java)
-    }
+            .create()
 
     private var lastRequestedPage = 1
     private var isRequestInProgress = false
@@ -40,30 +38,26 @@ class MovieApiService(
 
     @Synchronized
     suspend fun loadMoreMovies(): Either<Throwable, List<Movie>> {
-        Timber.tag(getTag("loadMoreMovies")).d("Invoked")
+        XLog.d(getLog("loadMoreMovies", "Invoked"))
 
-        val resultEither = requestMovies(lastRequestedPage)
-        if (resultEither.isRight) lastRequestedPage++
-        return resultEither
+        return requestMovies(lastRequestedPage).onSuccess { lastRequestedPage++ }
     }
 
-    private suspend fun requestMovies(page: Int): Either<Throwable, List<Movie>> {
-        Timber.tag(getTag("requestMovies")).d("Page: $page")
+    private suspend fun requestMovies(page: Int): Either<Throwable, List<Movie>> =
+        withContext(Dispatchers.IO) {
+            XLog.d(getLog("requestMovies", "Page: $page"))
 
-        isRequestInProgress.not() || return Either.Left(IllegalStateException("Already loading page: $page"))
-        isRequestInProgress = true
+            Either<Throwable, List<Movie>> {
+                isRequestInProgress.not() || throw IllegalStateException("Already loading page: $page")
+                isRequestInProgress = true
 
-        return try {
-            movieApi.getNowPlaying(apiKey, page).await()
-                .items
-                .map { it.toMovie(apiBaseImageUrl) }
-                .let { Either.Right(it) }
-        } catch (ex: HttpException) {
-            Either.Left(ex)
-        } catch (ex: Throwable) {
-            Either.Left(ex)
-        } finally {
-            isRequestInProgress = false
+                try {
+                    movieApi.getNowPlaying(apiKey, page).await()
+                        .items.map { it.toMovie(apiBaseImageUrl) }
+                } finally {
+                    isRequestInProgress = false
+                }
+            }
+
         }
-    }
 }

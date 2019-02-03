@@ -1,6 +1,6 @@
 package info.dvkr.switchmovie.domain.repositories
 
-import android.arch.lifecycle.LiveData
+import androidx.lifecycle.LiveData
 import info.dvkr.switchmovie.domain.model.Movie
 import info.dvkr.switchmovie.domain.utils.Either
 import org.threeten.bp.LocalDate

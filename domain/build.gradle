@@ -2,19 +2,25 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
 android {
-    compileSdkVersion compile_sdk
-    buildToolsVersion build_tools
+    compileSdkVersion(compileSdk)
+    buildToolsVersion(buildTools)
 
     defaultConfig {
-        minSdkVersion min_sdk
-        targetSdkVersion target_sdk
-        versionCode version_code
-        versionName version_name
+        minSdkVersion(minSdk)
+        targetSdkVersion(targetSdk)
+        versionCode = versionMajor * 10000 + versionMinor * 100 + versionPatch
+        versionName = "$versionMajor.$versionMinor.$versionPatch"
     }
 
     buildTypes {
         release {
             minifyEnabled false
+            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            minifyEnabled false
+            shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
@@ -23,33 +29,21 @@ android {
         main.java.srcDirs += 'src/main/kotlin'
         debug.java.srcDirs += 'src/debug/kotlin'
         release.java.srcDirs += 'src/release/kotlin'
-
-        main.java.srcDirs += [file("$buildDir/generated/source/kapt/main")]
-        debug.java.srcDirs += [file("$buildDir/generated/source/kapt/debug")]
-        release.java.srcDirs += [file("$buildDir/generated/source/kapt/release")]
-
-        main.java.srcDirs += [file("$buildDir/generated/source/kaptKotlin/main")]
-        debug.java.srcDirs += [file("$buildDir/generated/source/kaptKotlin/debug")]
-        release.java.srcDirs += [file("$buildDir/generated/source/kaptKotlin/release")]
     }
-}
 
-kotlin {
-    experimental {
-        coroutines "enable"
+    compileOptions {
+        setSourceCompatibility(JavaVersion.VERSION_1_8)
+        setTargetCompatibility(JavaVersion.VERSION_1_8)
     }
 }
 
 dependencies {
-    api "org.jetbrains:annotations:$annotations_version"
+    implementation("org.jetbrains:annotations:$jetbrainsAnnotations")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutineVersion")
 
-    api "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    api "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutine_version"
+    implementation("androidx.lifecycle:lifecycle-livedata-core:$androidxLifecycle")
 
-    api "android.arch.lifecycle:livedata-core:$lifecycle_version"
-//    api "android.arch.lifecycle:livedata:$lifecycle_version"
-
-    api "com.jakewharton.threetenabp:threetenabp:$threetenabp_version"
-
-    api "com.jakewharton.timber:timber:$timber_version"
+    api("org.threeten:threetenbp:$threetenbp:no-tzdb")
+    api("com.elvishew:xlog:$xlog")
 }

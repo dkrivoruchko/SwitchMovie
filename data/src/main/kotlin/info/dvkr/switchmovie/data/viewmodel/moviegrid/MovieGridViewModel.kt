@@ -1,181 +1,123 @@
 package info.dvkr.switchmovie.data.viewmodel.moviegrid
 
-import android.arch.lifecycle.LiveData
-import android.arch.lifecycle.MutableLiveData
-import com.spotify.mobius.*
-import com.spotify.mobius.functions.Consumer
-import com.spotify.mobius.runners.WorkRunner
-import info.dvkr.switchmovie.data.viewmodel.BaseViewStateViewModel
-import info.dvkr.switchmovie.data.viewmodel.MobiusLogger
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MediatorLiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Transformations
+import com.elvishew.xlog.XLog
+import info.dvkr.switchmovie.data.viewmodel.BaseViewModel
+import info.dvkr.switchmovie.domain.model.Movie
 import info.dvkr.switchmovie.domain.usecase.MoviesUseCase
-import info.dvkr.switchmovie.domain.utils.getTag
-import kotlinx.coroutines.experimental.Job
-import kotlinx.coroutines.experimental.delay
-import timber.log.Timber
-
+import info.dvkr.switchmovie.domain.utils.getLog
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.channels.SendChannel
+import kotlinx.coroutines.channels.actor
+import kotlinx.coroutines.channels.consumeEach
 
 class MovieGridViewModel(
-    private val eventWorkRunner: WorkRunner,
-    private val effectWorkRunner: WorkRunner,
+    viewModelScope: CoroutineScope,
     private val moviesUseCase: MoviesUseCase
-) : BaseViewStateViewModel<MovieGridModel, MovieGridEvent, MovieGridEffect>() {
+) : BaseViewModel(viewModelScope) {
 
-    private val movieGridModelLiveData = MutableLiveData<MovieGridModel>()
-    fun getMovieGridModelLiveData(): LiveData<MovieGridModel> = movieGridModelLiveData
+    data class MovieGridState(
+        val moviesLiveData: LiveData<List<Movie>> = MediatorLiveData(),
+        val invertMovieStarById: Int = 0,
+        val workInProgressCounter: Int = 0,
+        val error: Throwable? = null
+    )
 
-    private val update = Update<MovieGridModel, MovieGridEvent, MovieGridEffect> { model, event ->
-        return@Update when (event) {
-            MovieGridEvent.Init -> Next.dispatch(setOf(MovieGridEffect.Init))
+    private var movieGridState = MovieGridState()
+    private val movieGridStateLiveData = MutableLiveData<MovieGridState>()
 
-            is MovieGridEvent.ViewCancelInvertMovieStarById ->
-                if (model.invertMovieStarByIdJob?.first == event.movieId) {
-                    model.invertMovieStarByIdJob.second.cancel()
-                    Next.next(model.copy(invertMovieStarByIdJob = null))
-                } else {
-                    Next.noChange<MovieGridModel, MovieGridEffect>()
-                }
+    fun getMovieGridStateLiveData(): LiveData<MovieGridState> =
+        Transformations.distinctUntilChanged(movieGridStateLiveData)
 
-            is MovieGridEvent.ViewRefresh -> Next.dispatch(setOf(MovieGridEffect.Refresh))
-            is MovieGridEvent.ViewUpdate -> Next.dispatch(setOf(MovieGridEffect.Update))
-            is MovieGridEvent.ViewLoadMore -> Next.dispatch(setOf(MovieGridEffect.LoadMore))
-
-            is MovieGridEvent.ViewInvertMovieStarById -> {
-                val invertMovieStarByIdJob = Pair(event.movieId, Job())
-                Next.next(
-                    model.copy(invertMovieStarByIdJob = invertMovieStarByIdJob),
-                    setOf(MovieGridEffect.InvertMovieStarById(invertMovieStarByIdJob))
-                )
-            }
-
-            is MovieGridEvent.OnMovieList -> Next.next(model.copy(moviesLiveData = event.moviesLiveData))
-
-            is MovieGridEvent.InvertMovieStarByIdDone ->
-                if (model.invertMovieStarByIdJob?.first == event.movieId) {
-                    Next.next(model.copy(invertMovieStarByIdJob = null))
-                } else {
-                    Next.noChange<MovieGridModel, MovieGridEffect>()
-                }
-
-            MovieGridEvent.WorkStart -> Next.next(model.copy(workInProgressCounter = model.workInProgressCounter + 1))
-
-            MovieGridEvent.WorkFinish -> {
-                val workInProgress = model.workInProgressCounter - 1
-                workInProgress >= 0 || throw IllegalStateException("workInProgressCounter: $workInProgress < 0")
-                Next.next(model.copy(workInProgressCounter = workInProgress))
-            }
-
-            is MovieGridEvent.Error -> Next.next(model.copy(error = event.error))
-
-            else -> throw IllegalStateException("Unknown MovieGridEvent: $event")
-        }
+    private fun MovieGridState.updateState(block: MovieGridState.() -> MovieGridState) {
+        movieGridState = block(this)
+        XLog.d(getLog("updateState", "New state: $movieGridState"))
+        movieGridStateLiveData.postValue(movieGridState)
     }
 
-    private val effectHandler = Connectable<MovieGridEffect, MovieGridEvent> { eventConsumer ->
-        object : Connection<MovieGridEffect> {
-            override fun accept(effect: MovieGridEffect) {
-                when (effect) {
-                    MovieGridEffect.Init -> runEffect { effectInit(eventConsumer) }
+    private fun MovieGridState.increaseWorkInProgress() = updateState {
+        copy(workInProgressCounter = workInProgressCounter + 1)
+    }
 
-                    MovieGridEffect.Refresh -> runEffect {
-                        eventConsumer.accept(MovieGridEvent.WorkStart)
-                        effectRefresh(eventConsumer)
-                        eventConsumer.accept(MovieGridEvent.WorkFinish)
-                    }
+    private fun MovieGridState.decreaseWorkInProgress() = updateState {
+        require(workInProgressCounter > 0) { "workInProgressCounter: $workInProgressCounter <= 0" }
+        copy(workInProgressCounter = workInProgressCounter - 1)
+    }
 
-                    MovieGridEffect.Update -> runEffect {
-                        eventConsumer.accept(MovieGridEvent.WorkStart)
-                        effectUpdate(eventConsumer)
-                        eventConsumer.accept(MovieGridEvent.WorkFinish)
-                    }
+    private sealed class MovieGridViewModelEvent : BaseViewModel.Event {
+        object Init : MovieGridViewModelEvent()
 
-                    MovieGridEffect.LoadMore -> runEffect {
-                        eventConsumer.accept(MovieGridEvent.WorkStart)
-                        effectLoadMore()
-                        eventConsumer.accept(MovieGridEvent.WorkFinish)
-                    }
+        override fun toString(): String = this::class.java.simpleName
+    }
 
-                    is MovieGridEffect.InvertMovieStarById -> runEffect(effect.invertMovieStarByIdJob.second) {
-                        effectInvertMovieStarById(effect.invertMovieStarByIdJob, eventConsumer)
-                    }
+    override val viewModelEventChannel: SendChannel<BaseViewModel.Event> = actor(capacity = 8) {
+        consumeEach { event ->
+            try {
+                when (event) {
+                    MovieGridViewModelEvent.Init ->
+                        MoviesUseCase.Request.GetMoviesLiveData()
+                            .onStart { movieGridState.increaseWorkInProgress() }
+                            .process(moviesUseCase)
+                            .onAny { movieGridState.decreaseWorkInProgress() }
+                            .onSuccess { movieGridState.updateState { copy(moviesLiveData = it) } }
+                            .onFailure { onEvent(BaseViewModel.Error(it)) }
+
+                    MovieGridViewEvent.Refresh ->
+                        MoviesUseCase.Request.ClearMovies()
+                            .onStart { movieGridState.increaseWorkInProgress() }
+                            .process(moviesUseCase)
+                            .onAny { movieGridState.decreaseWorkInProgress() }
+                            .onSuccess { onEvent(MovieGridViewEvent.LoadMore) }
+                            .onFailure { onEvent(BaseViewModel.Error(it)) }
+
+                    MovieGridViewEvent.LoadMore ->
+                        MoviesUseCase.Request.LoadMoreMovies()
+                            .onStart { movieGridState.increaseWorkInProgress() }
+                            .process(moviesUseCase)
+                            .onAny { movieGridState.decreaseWorkInProgress() }
+                            .onSuccess { }
+                            .onFailure { onEvent(BaseViewModel.Error(it)) }
+
+                    MovieGridViewEvent.Update ->
+                        MoviesUseCase.Request.UpdateMovies()
+                            .onStart { movieGridState.increaseWorkInProgress() }
+                            .process(moviesUseCase)
+                            .onAny { movieGridState.decreaseWorkInProgress() }
+                            .onSuccess { onEvent(MovieGridViewEvent.LoadMore) }
+                            .onFailure { onEvent(BaseViewModel.Error(it)) }
+
+                    is MovieGridViewEvent.SetMovieStar ->
+                        MoviesUseCase.Request.SetMovieStar(event.movieId)
+                            .onStart { movieGridState.increaseWorkInProgress() }
+                            .process(moviesUseCase)
+                            .onAny { movieGridState.decreaseWorkInProgress() }
+                            .onSuccess { }
+                            .onFailure { }
+
+                    is MovieGridViewEvent.UnsetMovieStar ->
+                        MoviesUseCase.Request.UnsetMovieStar(event.movieId)
+                            .onStart { movieGridState.increaseWorkInProgress() }
+                            .process(moviesUseCase)
+                            .onAny { movieGridState.decreaseWorkInProgress() }
+                            .onSuccess { }
+                            .onFailure { }
+
+                    is BaseViewModel.Error ->
+                        movieGridState.updateState { copy(error = event.throwable) }
+
+                    else -> throw IllegalStateException("MovieGridViewModel: Unknown event: $event")
                 }
+            } catch (throwable: Throwable) {
+                XLog.e(this@MovieGridViewModel.getLog("actor"), throwable)
+                movieGridState.updateState { copy(error = throwable) }
             }
-
-            override fun dispose() = Unit  // We don't have any resources to release
         }
-    }
-
-    private suspend fun effectInit(eventConsumer: Consumer<MovieGridEvent>) =
-        MoviesUseCase.Request.GetMoviesLiveData().process(moviesUseCase) { resultEither ->
-            Timber.tag(getTag("effectInit")).d(resultEither.toString())
-
-            resultEither.either(
-                { sendEventInternal(MovieGridEvent.Error(it)) },
-                { eventConsumer.accept(MovieGridEvent.OnMovieList(it)) }
-            )
-        }
-
-    private suspend fun effectRefresh(eventConsumer: Consumer<MovieGridEvent>) =
-        MoviesUseCase.Request.ClearMovies().process(moviesUseCase) { resultEither ->
-            Timber.tag(getTag("effectRefresh")).d(resultEither.toString())
-
-            resultEither.either(
-                { sendEventInternal(MovieGridEvent.Error(it)) },
-                { eventConsumer.accept(MovieGridEvent.ViewLoadMore) }
-            )
-        }
-
-    private suspend fun effectUpdate(eventConsumer: Consumer<MovieGridEvent>) =
-        MoviesUseCase.Request.UpdateMovies().process(moviesUseCase) { resultEither ->
-            Timber.tag(getTag("effectUpdate")).d(resultEither.toString())
-
-            resultEither.either(
-                {},
-                { eventConsumer.accept(MovieGridEvent.ViewLoadMore) }
-            )
-        }
-
-    private suspend fun effectLoadMore() =
-        MoviesUseCase.Request.LoadMoreMovies().process(moviesUseCase) { resultEither ->
-            Timber.tag(getTag("effectLoadMore")).d(resultEither.toString())
-
-            resultEither.either(
-                { sendEventInternal(MovieGridEvent.Error(it)) },
-                {}
-            )
-        }
-
-    private suspend fun effectInvertMovieStarById(
-        invertMovieStarByIdJob: Pair<Int, Job>,
-        eventConsumer: Consumer<MovieGridEvent>
-    ) {
-        delay(3000)
-        MoviesUseCase.Request.InvertMovieStarById(invertMovieStarByIdJob.first).process(moviesUseCase) { resultEither ->
-            Timber.tag(getTag("effectInvertMovieStarById")).d(resultEither.toString())
-
-            resultEither.either(
-                { sendEventInternal(MovieGridEvent.Error(it)) },
-                { eventConsumer.accept(MovieGridEvent.InvertMovieStarByIdDone(invertMovieStarByIdJob.first)) }
-            )
-        }
-    }
-
-    override val loop: MobiusLoop<MovieGridModel, MovieGridEvent, MovieGridEffect> =
-        Mobius.loop(update, effectHandler)
-            .eventSource(eventSource)
-            .eventRunner { eventWorkRunner }
-            .effectRunner { effectWorkRunner }
-            .logger(MobiusLogger(this.javaClass.simpleName, ::onException))
-            .startFrom(MovieGridModel())
-            .apply {
-                observe { movieGridModelLiveData.postValue(it) }
-            }
-
-    override fun onException(exception: Throwable) {
-        super.onException(exception)
-        sendEventInternal(MovieGridEvent.Error(exception))
     }
 
     init {
-        onViewEvent(MovieGridEvent.Init)
+        onEvent(MovieGridViewModelEvent.Init)
     }
 }

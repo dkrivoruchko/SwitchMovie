@@ -4,18 +4,18 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="info.dvkr.switchmovie.ui.moviegrid.MovieGridActivity">
+    tools:context="info.dvkr.switchmovie.ui.fragment.MovieGridFragment">
 
-    <android.support.v4.widget.SwipeRefreshLayout
-        android:id="@+id/movieGridSwipeRefresh"
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/sr_fragment_movie_grid"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/movieGridRecyclerView"
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_fragment_movie_grid"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:scrollbars="vertical"
-            tools:listitem="@layout/movie_item" />
-    </android.support.v4.widget.SwipeRefreshLayout>
+            tools:listitem="@layout/item_movie" />
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 </LinearLayout>

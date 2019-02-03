@@ -3,19 +3,25 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 
 android {
-    compileSdkVersion compile_sdk
-    buildToolsVersion build_tools
+    compileSdkVersion(compileSdk)
+    buildToolsVersion(buildTools)
 
     defaultConfig {
-        minSdkVersion min_sdk
-        targetSdkVersion target_sdk
-        versionCode version_code
-        versionName version_name
+        minSdkVersion(minSdk)
+        targetSdkVersion(targetSdk)
+        versionCode = versionMajor * 10000 + versionMinor * 100 + versionPatch
+        versionName = "$versionMajor.$versionMinor.$versionPatch"
     }
 
     buildTypes {
         release {
             minifyEnabled false
+            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            minifyEnabled false
+            shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
@@ -24,58 +30,44 @@ android {
         main.java.srcDirs += 'src/main/kotlin'
         debug.java.srcDirs += 'src/debug/kotlin'
         release.java.srcDirs += 'src/release/kotlin'
+    }
 
-        main.java.srcDirs += [file("$buildDir/generated/source/kapt/main")]
-        debug.java.srcDirs += [file("$buildDir/generated/source/kapt/debug")]
-        release.java.srcDirs += [file("$buildDir/generated/source/kapt/release")]
-
-        main.java.srcDirs += [file("$buildDir/generated/source/kaptKotlin/main")]
-        debug.java.srcDirs += [file("$buildDir/generated/source/kaptKotlin/debug")]
-        release.java.srcDirs += [file("$buildDir/generated/source/kaptKotlin/release")]
+    compileOptions {
+        setSourceCompatibility(JavaVersion.VERSION_1_8)
+        setTargetCompatibility(JavaVersion.VERSION_1_8)
     }
 }
 
-kotlin {
-    experimental {
-        coroutines "enable"
-    }
-}
-
-kapt {
-    useBuildCache = true
-}
+kapt { useBuildCache = true }
 
 dependencies {
-    api project(':domain')
+    implementation project(':domain')
 
-    api "org.jetbrains:annotations:$annotations_version"
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutine_version"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutine_version"
+    api("org.jetbrains:annotations:$jetbrainsAnnotations")
+    api("org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion")
+    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutineVersion")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutineVersion")
 
-    implementation "android.arch.lifecycle:viewmodel:$lifecycle_version"
-    implementation "android.arch.lifecycle:livedata:$lifecycle_version"
-    implementation "android.arch.lifecycle:runtime:$lifecycle_version"
-    kapt "android.arch.lifecycle:compiler:$lifecycle_version"
+    implementation("androidx.annotation:annotation:$androidxAnnotation")
+    implementation("androidx.lifecycle:lifecycle-viewmodel:$androidxLifecycle")
+    implementation("androidx.lifecycle:lifecycle-livedata:$androidxLifecycle")
+    implementation("androidx.lifecycle:lifecycle-runtime:$androidxLifecycle")
+    kapt("androidx.lifecycle:lifecycle-compiler:$androidxLifecycle")
 
-    implementation "com.spotify.mobius:mobius-core:$mobius_version"
+    api("androidx.room:room-runtime:$androidxRroom")
+    kapt("androidx.room:room-compiler:$androidxRroom")
 
-    implementation "com.jakewharton.threetenabp:threetenabp:$threetenabp_version"
+    api("org.bouncycastle:bcprov-jdk15on:1.60")
+    api("org.conscrypt:conscrypt-android:1.4.2")
+    api("com.squareup.okio:okio:$okio")
+    api("com.squareup.okhttp3:okhttp:$okhttp")
+    api("com.squareup.okhttp3:logging-interceptor:$okhttp")
+    implementation("com.squareup.retrofit2:retrofit:$retrofit")
+    implementation "com.squareup.retrofit2:converter-moshi:$retrofit"
+    implementation("com.squareup.moshi:moshi:$moshi")
+    kapt("com.squareup.moshi:moshi-kotlin-codegen:$moshi")
 
-    implementation "com.github.iamironz:binaryprefs:$binaryprefs_version"
+    implementation("ru.gildor.coroutines:kotlin-coroutines-retrofit:1.0.0")
 
-    // Room
-    implementation "android.arch.persistence.room:runtime:$room_version"
-    kapt "android.arch.persistence.room:compiler:$room_version"
-
-    // Retrofit
-    implementation "com.squareup.okio:okio:$okio_version"
-    implementation "com.squareup.okhttp3:okhttp:$okhttp_version"
-    implementation "com.squareup.retrofit2:retrofit:$retrofit_version"
-    implementation "ru.gildor.coroutines:kotlin-coroutines-retrofit:0.12.0"
-    implementation "com.squareup.moshi:moshi:$moshi_version"
-    kapt "com.squareup.moshi:moshi-kotlin-codegen:$moshi_version"
-    implementation "com.squareup.retrofit2:converter-moshi:$retrofit_version"
-
-    implementation "com.jakewharton.timber:timber:$timber_version"
+    api("com.github.iamironz:binaryprefs:$binaryprefs")
 }

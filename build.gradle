@@ -1,32 +1,40 @@
 buildscript {
     ext {
-        kotlin_version = '1.2.71'
-        coroutine_version = '0.30.2'
+        versionMajor = 4
+        versionMinor = 0
+        versionPatch = 0
 
-        build_tools = '28.0.3'
-        compile_sdk = 28
-        min_sdk = 21
-        target_sdk = 28
+        compileSdk = 28
+        buildTools = "28.0.3"
+        minSdk = 21
+        targetSdk = 28
 
-        version_code = 3
-        version_name = '3.0'
+        jetbrainsAnnotations = "17.0.0"
+        kotlinVersion = "1.3.20"
+        coroutineVersion = "1.1.1"
 
-        annotations_version = '16.0.2'
-        lifecycle_version = '1.1.1'
-        view_version = '28.0.0'
-        constraint_version = '1.1.3'
-        room_version = '1.1.1'
-        koin_version = '1.0.1'
-        mobius_version = '1.2.0'
-        threetenabp_version = '1.1.0'
+        androidxAnnotation = "1.0.1"
+        androidxAppcompat = "1.0.2"
+        androidxRecyclerview = "1.0.0"
+        androidxCardview = "1.0.0"
+        androidxConstraint = "1.1.3"
+        androidxLifecycle = "2.1.0-alpha02"
+        androidxNavigation = "1.0.0-alpha11"
+        androidxRroom = "2.0.0"
 
-        okio_version = '2.1.0'
-        okhttp_version = '3.11.0'
-        retrofit_version = '2.4.0'
-        moshi_version = '1.7.0'
+        okio = "2.2.2"
+        okhttp = "3.12.1"
+        retrofit = "2.5.0"
+        moshi = "1.8.0"
 
-        binaryprefs_version = '1.0.0'
-        timber_version = '4.7.1'
+        threetenbp = "1.3.8"
+        threetenabp = "1.1.1"
+
+        koin = "2.0.0-beta-1"
+        binaryprefs = "1.0.1"
+        xlog = "1.6.1"
+
+        leakcanary = "1.6.3"
     }
 
     repositories {
@@ -35,8 +43,9 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.2.1'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath 'com.android.tools.build:gradle:3.3.0'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
+        classpath "android.arch.navigation:navigation-safe-args-gradle-plugin:$androidxNavigation"
     }
 }
 

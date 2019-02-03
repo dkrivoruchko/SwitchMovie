@@ -16,17 +16,15 @@
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
         <activity
-            android:name=".ui.moviegrid.MovieGridActivity"
-            android:label="@string/movie_grid_activity_name">
+            android:name=".ui.activity.AppActivity"
+            android:label="@string/movie_grid_activity_name"
+            android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".ui.moviedetail.MovieDetailActivity"
-            android:parentActivityName=".ui.moviegrid.MovieGridActivity" />
     </application>
 
 </manifest>

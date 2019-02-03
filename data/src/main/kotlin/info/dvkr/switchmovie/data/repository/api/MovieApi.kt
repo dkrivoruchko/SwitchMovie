@@ -1,7 +1,6 @@
 package info.dvkr.switchmovie.data.repository.api
 
 
-import android.support.annotation.Keep
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 import info.dvkr.switchmovie.domain.model.Movie
@@ -9,11 +8,11 @@ import retrofit2.Call
 import retrofit2.http.GET
 import retrofit2.http.Query
 
-@Keep object MovieApi {
+object MovieApi {
     const val MOVIES_PER_PAGE = 20
 
     @JsonClass(generateAdapter = true)
-    @Keep class MovieRaw(
+    class MovieRaw(
         @Json(name = "id") val id: Int,
         @Json(name = "poster_path") val posterPath: String?,
         @Json(name = "title") val title: String,
@@ -37,14 +36,14 @@ import retrofit2.http.Query
     }
 
     @JsonClass(generateAdapter = true)
-    @Keep class MovieListRaw(
+    class MovieListRaw(
         @Json(name = "page") val page: Int = 0,
         @Json(name = "total_results") val totalResults: Int = 0,
         @Json(name = "total_pages") val totalPages: Int = 0,
         @Json(name = "results") val items: List<MovieRaw> = emptyList()
     )
 
-    @Keep interface Service {
+    interface Service {
 
         @GET("movie/now_playing")
 //        @Headers("Cache-Control: private, max-age=600, max-stale=600")

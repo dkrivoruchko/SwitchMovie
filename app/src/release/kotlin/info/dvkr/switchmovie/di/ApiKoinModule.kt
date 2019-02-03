@@ -5,7 +5,7 @@ import info.dvkr.switchmovie.data.repository.api.MovieApiService
 import okhttp3.Cache
 import okhttp3.OkHttpClient
 import org.koin.android.ext.koin.androidContext
-import org.koin.dsl.module.module
+import org.koin.dsl.module
 
 val apiKoinModule = module {
 

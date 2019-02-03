@@ -1,6 +1,6 @@
 package info.dvkr.switchmovie.data.repository
 
-import android.arch.lifecycle.LiveData
+import androidx.lifecycle.LiveData
 import info.dvkr.switchmovie.data.repository.api.MovieApiService
 import info.dvkr.switchmovie.data.repository.local.MovieLocalService
 import info.dvkr.switchmovie.domain.model.Movie

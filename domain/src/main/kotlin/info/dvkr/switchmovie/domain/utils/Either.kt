@@ -1,42 +1,60 @@
 package info.dvkr.switchmovie.domain.utils
 
-/**
- * Represents left value of one of two possible types (left disjoint union).
- * Instances of [Either] are either an instance of [Left] or [Right].
- * FP Convention dictates that [Left] is used for "failure"
- * and [Right] is used for "success".
- *
- * @see Left
- * @see Right
- */
-sealed class Either<out L, out R> {
-    /** * Represents the left side of [Either] class which by convention is left "Failure". */
-    data class Left<out L>(val left: L) : Either<L, Nothing>()
 
-    /** * Represents the right side of [Either] class which by convention is left "Success". */
-    data class Right<out R>(val right: R) : Either<Nothing, R>()
-
-    val isRight get() = this is Right<R>
-    val isLeft get() = this is Left<L>
-
-    fun <L> left(a: L) = Left(a)
-    fun <R> right(b: R) = Right(b)
-
-    fun either(fnL: (L) -> Any, fnR: (R) -> Any): Any =
-        when (this) {
-            is Left -> fnL(left)
-            is Right -> fnR(right)
+sealed class Either<out F : Throwable, out S> {
+    data class Failure<out F : Throwable>(val exception: F) : Either<F, Nothing>() {
+        companion object {
+            operator fun <F : Throwable> invoke(f: F): Either<F, Nothing> = Failure(f)
         }
-}
-
-// Credits to Alex Hart -> https://proandroiddev.com/kotlins-nothing-type-946de7d464fb
-// Composes 2 functions
-fun <A, B, C> ((A) -> B).c(f: (B) -> C): (A) -> C = { f(this(it)) }
-
-fun <T, L, R> Either<L, R>.flatMap(fn: (R) -> Either<L, T>): Either<L, T> =
-    when (this) {
-        is Either.Left -> Either.Left(left)
-        is Either.Right -> fn(right)
     }
 
-fun <T, L, R> Either<L, R>.map(fn: (R) -> (T)): Either<L, T> = this.flatMap(fn.c(::right))
+    data class Success<out S>(val value: S) : Either<Nothing, S>() {
+        companion object {
+            operator fun <S> invoke(s: S): Either<Nothing, S> = Success(s)
+        }
+    }
+
+    val isFailure get() = this is Failure<F>
+    val isSuccess get() = this is Success<S>
+
+    companion object {
+        inline operator fun <reified F : Throwable, reified S> invoke(block: () -> S): Either<F, S> =
+            try {
+                Either.Success(block())
+            } catch (e: Throwable) {
+                Either.Failure(e as F)
+            }
+    }
+
+    inline fun fold(crossinline fnF: (F) -> Any, crossinline fnS: (S) -> Any): Any = when (this) {
+        is Failure -> fnF(exception)
+        is Success -> fnS(value)
+    }
+
+    inline fun onSuccess(crossinline fnS: (S) -> Any): Either<F, S> = when (this) {
+        is Failure -> this
+        is Success -> {
+            fnS(value)
+            this
+        }
+    }
+
+    inline fun onFailure(fnF: (F) -> Any): Either<F, S> = when (this) {
+        is Failure -> {
+            fnF(exception)
+            this
+        }
+        is Success -> this
+    }
+
+    inline fun onAny(crossinline fn: (Either<F, S>) -> Any): Either<F, S> = apply { fn(this) }
+}
+
+inline fun <T, F : Throwable, S> Either<F, S>.flatMap(fn: (S) -> Either<F, T>): Either<F, T> =
+    when (this) {
+        is Either.Failure -> this
+        is Either.Success -> fn(value)
+    }
+
+inline fun <T, F : Throwable, S> Either<F, S>.map(fn: (S) -> (T)): Either<F, T> =
+    this.flatMap { Either.Success(fn(it)) }

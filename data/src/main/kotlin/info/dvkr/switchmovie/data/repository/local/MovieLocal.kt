@@ -1,7 +1,7 @@
 package info.dvkr.switchmovie.data.repository.local
 
-import android.arch.lifecycle.LiveData
-import android.arch.persistence.room.*
+import androidx.lifecycle.LiveData
+import androidx.room.*
 import info.dvkr.switchmovie.domain.model.Movie
 
 object MovieLocal {

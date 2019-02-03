@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v7.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#000"
-    tools:context="info.dvkr.switchmovie.ui.moviedetail.MovieDetailActivity">
+    tools:context="info.dvkr.switchmovie.ui.fragment.MovieDetailFragment">
 
-    <android.support.v4.widget.SwipeRefreshLayout
-        android:id="@+id/movieDetailwipeRefresh"
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/sr_fragment_movie_detail"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <android.support.constraint.ConstraintLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <android.support.v7.widget.AppCompatImageView
-                android:id="@+id/movieDetailBackground"
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/iv_fragment_movie_detail_background"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:alpha="0.4"
@@ -27,19 +27,19 @@
                 app:layout_constraintRight_toRightOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <android.support.constraint.Guideline
+            <androidx.constraintlayout.widget.Guideline
                 android:id="@+id/guidelineVertical"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 app:layout_constraintGuide_percent="0.5" />
 
-            <android.support.v7.widget.CardView
-                android:id="@+id/cardView"
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cv_fragment_movie_detail"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:layout_marginStart="8dp"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="8dp"
                 android:layout_marginEnd="8dp"
                 android:layout_marginBottom="8dp"
                 app:cardCornerRadius="8dp"
@@ -49,14 +49,14 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
 
-                <android.support.v7.widget.AppCompatImageView
-                    android:id="@+id/movieDetailImage"
+                <androidx.appcompat.widget.AppCompatImageView
+                    android:id="@+id/iv_fragment_movie_detail_image"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:scaleType="centerCrop" />
 
-                <android.support.v7.widget.AppCompatImageView
-                    android:id="@+id/movieDetailStar"
+                <androidx.appcompat.widget.AppCompatImageView
+                    android:id="@+id/iv_fragment_movie_detail_start"
                     android:layout_width="48dp"
                     android:layout_height="48dp"
                     android:layout_gravity="end"
@@ -64,100 +64,98 @@
                     android:paddingStart="24dp"
                     android:paddingBottom="24dp"
                     app:srcCompat="@drawable/ic_star_24dp" />
-            </android.support.v7.widget.CardView>
+            </androidx.cardview.widget.CardView>
 
-            <android.support.v7.widget.AppCompatTextView
-                android:id="@+id/textViewScore"
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/tv_fragment_movie_detail_score_text"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:layout_marginEnd="8dp"
                 android:text="@string/score"
                 android:textColor="@color/colorMovieDetailHeader"
                 android:textSize="16sp"
-                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toTopOf="@+id/tv_fragment_movie_detail_rating_text"
+                app:layout_constraintEnd_toEndOf="@+id/tv_fragment_movie_detail_date_text"
                 app:layout_constraintStart_toStartOf="@+id/guidelineVertical"
-                app:layout_constraintTop_toTopOf="@+id/cardView" />
+                app:layout_constraintTop_toTopOf="@+id/cv_fragment_movie_detail" />
 
-            <android.support.v7.widget.AppCompatTextView
-                android:id="@+id/movieDetailScore"
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/tv_fragment_movie_detail_score"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
                 android:layout_marginEnd="8dp"
                 android:textColor="@color/colorMovieDetail"
                 android:textSize="18sp"
                 android:textStyle="bold"
+                app:layout_constraintBaseline_toBaselineOf="@+id/tv_fragment_movie_detail_score_text"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="@+id/guidelineVertical"
-                app:layout_constraintTop_toBottomOf="@+id/textViewScore"
+                app:layout_constraintStart_toEndOf="@+id/tv_fragment_movie_detail_score_text"
                 tools:text="8.2" />
 
-            <android.support.v7.widget.AppCompatTextView
-                android:id="@+id/textViewRating"
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/tv_fragment_movie_detail_rating_text"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
                 android:text="@string/rating"
                 android:textColor="@color/colorMovieDetailHeader"
                 android:textSize="16sp"
-                app:layout_constraintBottom_toTopOf="@+id/movieDetailRating"
-                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toTopOf="@+id/tv_fragment_movie_detail_date_text"
+                app:layout_constraintEnd_toEndOf="@+id/tv_fragment_movie_detail_date_text"
                 app:layout_constraintStart_toStartOf="@+id/guidelineVertical"
-                app:layout_constraintTop_toBottomOf="@+id/movieDetailScore"
-                app:layout_constraintVertical_chainStyle="packed" />
+                app:layout_constraintTop_toBottomOf="@+id/tv_fragment_movie_detail_score_text" />
 
-            <android.support.v7.widget.AppCompatTextView
-                android:id="@+id/movieDetailRating"
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/tv_fragment_movie_detail_rating"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
                 android:layout_marginEnd="8dp"
                 android:textColor="@color/colorMovieDetail"
                 android:textSize="18sp"
                 android:textStyle="bold"
-                app:layout_constraintBottom_toTopOf="@+id/textViewReleaseDate"
+                app:layout_constraintBaseline_toBaselineOf="@+id/tv_fragment_movie_detail_rating_text"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="@+id/guidelineVertical"
-                app:layout_constraintTop_toBottomOf="@+id/textViewRating"
-                app:layout_constraintVertical_chainStyle="packed"
+                app:layout_constraintStart_toEndOf="@+id/tv_fragment_movie_detail_rating_text"
                 tools:text="R" />
 
-            <android.support.v7.widget.AppCompatTextView
-                android:id="@+id/textViewReleaseDate"
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/tv_fragment_movie_detail_date_text"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
+                android:layout_marginBottom="8dp"
                 android:text="@string/release_date"
                 android:textColor="@color/colorMovieDetailHeader"
                 android:textSize="16sp"
-                app:layout_constraintBottom_toTopOf="@+id/movieDetailReleaseDate"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="@+id/guidelineVertical" />
+                app:layout_constraintBottom_toBottomOf="@+id/cv_fragment_movie_detail"
+                app:layout_constraintStart_toStartOf="@+id/guidelineVertical"
+                app:layout_constraintTop_toBottomOf="@+id/tv_fragment_movie_detail_rating_text" />
 
-            <android.support.v7.widget.AppCompatTextView
-                android:id="@+id/movieDetailReleaseDate"
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/tv_fragment_movie_detail_date"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
                 android:layout_marginEnd="8dp"
-                android:layout_marginBottom="8dp"
                 android:textColor="@color/colorMovieDetail"
                 android:textSize="18sp"
                 android:textStyle="bold"
-                app:layout_constraintBottom_toBottomOf="@+id/cardView"
+                app:layout_constraintBaseline_toBaselineOf="@+id/tv_fragment_movie_detail_date_text"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="@+id/guidelineVertical"
+                app:layout_constraintStart_toEndOf="@+id/tv_fragment_movie_detail_date_text"
                 tools:text="July 17, 2015" />
 
-            <android.support.constraint.Guideline
+            <androidx.constraintlayout.widget.Guideline
                 android:id="@+id/guidelineHorizontal"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 app:layout_constraintGuide_percent="0.45" />
 
-            <android.support.v7.widget.AppCompatTextView
-                android:id="@+id/movieDetailTitle"
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/tv_fragment_movie_detail_title"
                 android:layout_width="0dp"
-                android:layout_height="48dp"
+                android:layout_height="36dp"
                 android:layout_margin="16dp"
                 android:gravity="center"
                 android:textColor="@color/colorMovieDetailTitle"
@@ -175,10 +173,10 @@
                 android:layout_marginStart="16dp"
                 android:alpha="0.4"
                 android:background="@color/colorMovieDetailHeader"
-                app:layout_constraintTop_toTopOf="@+id/movieDetailOverview" />
+                app:layout_constraintTop_toTopOf="@+id/tv_fragment_movie_detail_overview" />
 
-            <android.support.v7.widget.AppCompatTextView
-                android:id="@+id/movieDetailOverview"
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/tv_fragment_movie_detail_overview"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:layout_margin="16dp"
@@ -190,11 +188,11 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/movieDetailTitle"
+                app:layout_constraintTop_toBottomOf="@+id/tv_fragment_movie_detail_title"
                 tools:text="TextView" />
 
             <View
-                android:id="@+id/viewLineAfterOverview"
+                android:id="@+id/v_fragment_movie_detail_line"
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:layout_marginStart="16dp"
@@ -202,6 +200,6 @@
                 android:alpha="0.4"
                 android:background="@color/colorMovieDetailHeader"
                 app:layout_constraintBottom_toBottomOf="parent" />
-        </android.support.constraint.ConstraintLayout>
-    </android.support.v4.widget.SwipeRefreshLayout>
-</android.support.v7.widget.LinearLayoutCompat>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+</androidx.appcompat.widget.LinearLayoutCompat>

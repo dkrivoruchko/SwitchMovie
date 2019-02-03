@@ -1,66 +1,54 @@
 package info.dvkr.switchmovie.data.repository.local
 
-import android.arch.lifecycle.LiveData
-import com.ironz.binaryprefs.Preferences
-import info.dvkr.switchmovie.data.utils.bindPreference
+import androidx.lifecycle.LiveData
+import com.elvishew.xlog.XLog
 import info.dvkr.switchmovie.domain.model.Movie
-import info.dvkr.switchmovie.domain.utils.getTag
+import info.dvkr.switchmovie.domain.settings.Settings
+import info.dvkr.switchmovie.domain.utils.getLog
 import org.threeten.bp.LocalDate
-import timber.log.Timber
 
 class MovieLocalService(
     private val movieDao: MovieLocal.MovieDao,
-    private val moviePreferences: Preferences
+    private val settings: Settings
 ) {
 
-    private var lastMovieUpdateDate: Long by bindPreference(
-        moviePreferences, "KEY_LAST_MOVIE_UPDATE_DATE", LocalDate.now().minusDays(2).toEpochDay()
-    )
-
-
     fun getMovies(): LiveData<List<Movie>> {
-        Timber.tag(getTag("getMovies")).d("Invoked")
+        XLog.d(getLog("getMovies", "Invoked"))
         return movieDao.getAll()
     }
 
     fun getMovieById(movieId: Int): Movie? {
-        Timber.tag(getTag("getMovieById")).d(movieId.toString())
+        XLog.d(getLog("getMovieById", "$movieId"))
         return movieDao.getMovieById(movieId)
     }
 
     fun getMovieByIdLiveData(movieId: Int): LiveData<Movie> {
-        Timber.tag(getTag("getMovieByIdLiveData")).d(movieId.toString())
-
+        XLog.d(getLog("getMovieByIdLiveData", "$movieId"))
         return movieDao.getMovieByIdLiveData(movieId)
     }
 
     fun getLastMovieUpdateDate(): LocalDate {
-        Timber.tag(getTag("getLastMovieUpdateDate")).d("Invoked")
-
-        return LocalDate.ofEpochDay(lastMovieUpdateDate)
+        XLog.d(getLog("getLastMovieUpdateDate", "Invoked"))
+        return LocalDate.ofEpochDay(settings.lastMovieUpdateDate)
     }
 
     fun addMovies(inMovieList: List<Movie>) {
-        Timber.tag(getTag("addMovies")).d(inMovieList.toString())
-
+        XLog.d(getLog("addMovies", inMovieList.joinToString()))
         movieDao.insertAll(inMovieList.map { MovieLocal.MovieConverter.fromMovieToMovieDb(it) })
     }
 
     fun updateMovie(inMovie: Movie) {
-        Timber.tag(getTag("updateMovie")).d(inMovie.toString())
-
+        XLog.d(getLog("updateMovie", "$inMovie"))
         movieDao.insert(inMovie.let { MovieLocal.MovieConverter.fromMovieToMovieDb(it) })
     }
 
     fun deleteAll() {
-        Timber.tag(getTag("deleteAll")).d("Invoked")
-
+        XLog.d(getLog("deleteAll", "Invoked"))
         movieDao.deleteAll()
     }
 
     fun setLastMovieUpdateDate(localDate: LocalDate) {
-        Timber.tag(getTag("setLastMovieUpdateDate")).d(localDate.toString())
-
-        lastMovieUpdateDate = localDate.toEpochDay()
+        XLog.d(getLog("setLastMovieUpdateDate", "$localDate"))
+        settings.lastMovieUpdateDate = localDate.toEpochDay()
     }
 }

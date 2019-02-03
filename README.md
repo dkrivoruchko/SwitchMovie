@@ -5,7 +5,7 @@
 **Description**
 
 *Initially app was developed as a test task for Android developer.*<br>
-*Now I'm using it as a base to test new technologies/libs/ideas.*<br>
+*Now it's used as a base to test new technologies/libs/ideas.*<br>
 *Master branch represent the most resent of them.<br>*
 *See [Version-Two](https://github.com/dkrivoruchko/SwitchMovie/tree/version-one) for quite old code,
 [Version-One](https://github.com/dkrivoruchko/SwitchMovie/tree/version-one) very old code.<br>*
@@ -15,7 +15,7 @@ It downloads movies data from [The Movie Database API](http://docs.themoviedb.ap
 Next page data loaded automatically as soon as user scroll to the end of the list.<br>
 If data available offline then no request send to server.<br>
 User may start/run application offline, available offline data will be shown or error message for failed server request.<br>
-Pull to refresh feature also available (it rewrite local cache data).<br>
+Pull to refresh feature also available (it's rewrite local cache data).<br>
 Basic loading animation implemented.<br>
 Application users some sort of State Machine in ViewModel to manage View states.
 
@@ -27,15 +27,16 @@ Application users some sort of State Machine in ViewModel to manage View states.
 * No loading animation for image loading.
 * Error handling is very basic.
 
-**Application is based on Clean Architecture and Android Architecture Components and uses:**
+**Application is based on Clean Architecture, Single Activity and MVI patterns and use:**
 * [Kotlin](https://kotlinlang.org)
 * [Kotlin coroutines](https://github.com/Kotlin/kotlinx.coroutines) (Yes, no RxJava - see [version-one](https://github.com/dkrivoruchko/SwitchMovie/tree/version-one) branch for it)
 * [Android Architecture Components](https://developer.android.com/topic/libraries/architecture/index.html) (ViewModel, LiveData, Room, Navigation)
-* [Android support libraries](https://developer.android.com/topic/libraries/support-library/index.html)
+* [Android Jetpack libraries](https://developer.android.com/jetpack/)
 * [Koin](https://github.com/Ekito/koin) (Yes, no Dagger 2 - see [version-one](https://github.com/dkrivoruchko/SwitchMovie/tree/version-one) branch for it)
 * [Retrofit 2](https://github.com/square/retrofit)
 * [Glide 4](https://github.com/bumptech/glide/tree/master)
 * [Binary Preferences](https://github.com/iamironz/binaryprefs)
+* [xLog](https://github.com/elvishew/xLog)
 * [LeakCanary](https://github.com/square/leakcanary)
 
 **Possible things to improve:**

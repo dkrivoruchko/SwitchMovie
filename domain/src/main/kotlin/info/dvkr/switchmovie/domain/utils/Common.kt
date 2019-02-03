@@ -1,3 +1,4 @@
 package info.dvkr.switchmovie.domain.utils
 
-fun Any.getTag(name: String? = "") = "${this.javaClass.simpleName}.$name@${Thread.currentThread().name}"
+fun Any.getLog(tag: String? = "", msg: String? = "") =
+    "${this.javaClass.simpleName}#${this.hashCode()}.$tag@${Thread.currentThread().name}: $msg"

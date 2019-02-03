@@ -1,30 +1,46 @@
 package info.dvkr.switchmovie.domain.usecase.base
 
-import android.support.annotation.CallSuper
-import info.dvkr.switchmovie.domain.utils.getTag
-import kotlinx.coroutines.experimental.CoroutineExceptionHandler
-import kotlinx.coroutines.experimental.CoroutineScope
-import kotlinx.coroutines.experimental.Dispatchers
-import kotlinx.coroutines.experimental.Job
-import kotlinx.coroutines.experimental.channels.SendChannel
-import timber.log.Timber
-import kotlin.coroutines.experimental.CoroutineContext
+import com.elvishew.xlog.XLog
+import info.dvkr.switchmovie.domain.utils.Either
+import info.dvkr.switchmovie.domain.utils.flatMap
+import info.dvkr.switchmovie.domain.utils.getLog
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.SendChannel
 
-abstract class BaseUseCase : CoroutineScope {
+abstract class BaseUseCase(useCaseScope: CoroutineScope) : CoroutineScope by useCaseScope {
 
-    private val parentJob: Job = Job()
-
-    override val coroutineContext: CoroutineContext
-        get() = parentJob + Dispatchers.Default + CoroutineExceptionHandler { _, exception -> onException(exception) }
-
-    @CallSuper
-    protected fun onException(exception: Throwable) {
-        Timber.tag(getTag())
-            .e(exception, "Caught $exception with suppressed ${exception.suppressed?.contentToString()}")
+    companion object {
+        val useCaseScope: CoroutineScope
+            get() = CoroutineScope(SupervisorJob() + Dispatchers.Default + CoroutineExceptionHandler { _, throwable ->
+                XLog.e(getLog("onCoroutineException"), throwable)
+            })
     }
 
-    protected abstract val sendChannel: SendChannel<BaseUseCaseRequest<*>>
+    protected abstract val useCaseRequestChannel: SendChannel<Request<*>>
 
-    @Throws(Exception::class)
-    fun offer(request: BaseUseCaseRequest<*>) = sendChannel.offer(request)
+    private fun enqueueForExecution(request: Request<*>) {
+        XLog.d(getLog("enqueueForExecution", "Request: $request"))
+
+        coroutineContext.isActive || throw IllegalStateException("JobIsNotActive")
+        useCaseRequestChannel.offer(request) || throw IllegalStateException("ChannelIsFull")
+    }
+
+    abstract class Request<R> {
+        private val resultDeffered: CompletableDeferred<Either<Throwable, R>> = CompletableDeferred()
+        private var runOnStart: () -> Any = { }
+
+        fun onStart(block: () -> Any): Request<R> = this.apply { runOnStart = block }
+
+        suspend fun process(baseUseCase: BaseUseCase): Either<Throwable, R> =
+            Either<Throwable, Unit> {
+                runOnStart()
+                baseUseCase.enqueueForExecution(this@Request)
+            }
+                .flatMap { resultDeffered.await() }
+                .onFailure { sendResponse(Either.Failure(it)) }
+
+        fun sendResponse(response: Either<Throwable, R>) = resultDeffered.complete(response)
+    }
+
+    inline fun <reified R> Request<R>.sendResponse(crossinline block: () -> R) = this.sendResponse(Either { block() })
 }
