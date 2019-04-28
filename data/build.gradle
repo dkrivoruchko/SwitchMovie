@@ -1,5 +1,6 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
+apply plugin: 'kotlinx-serialization'
 apply plugin: 'kotlin-kapt'
 
 android {
@@ -44,7 +45,7 @@ dependencies {
     implementation project(':domain')
 
     api("org.jetbrains:annotations:$jetbrainsAnnotations")
-    api("org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion")
+    api("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutineVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutineVersion")
 
@@ -52,22 +53,20 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel:$androidxLifecycle")
     implementation("androidx.lifecycle:lifecycle-livedata:$androidxLifecycle")
     implementation("androidx.lifecycle:lifecycle-runtime:$androidxLifecycle")
-    kapt("androidx.lifecycle:lifecycle-compiler:$androidxLifecycle")
+    implementation("androidx.lifecycle:lifecycle-common-java8:$androidxLifecycle")
+//    kapt("androidx.lifecycle:lifecycle-compiler:$androidxLifecycle")
 
     api("androidx.room:room-runtime:$androidxRroom")
     kapt("androidx.room:room-compiler:$androidxRroom")
 
-    api("org.bouncycastle:bcprov-jdk15on:1.60")
-    api("org.conscrypt:conscrypt-android:1.4.2")
+//    api("org.bouncycastle:bcprov-jdk15on:1.60")
+    api("org.conscrypt:conscrypt-android:2.1.0")
     api("com.squareup.okio:okio:$okio")
     api("com.squareup.okhttp3:okhttp:$okhttp")
     api("com.squareup.okhttp3:logging-interceptor:$okhttp")
     implementation("com.squareup.retrofit2:retrofit:$retrofit")
-    implementation "com.squareup.retrofit2:converter-moshi:$retrofit"
-    implementation("com.squareup.moshi:moshi:$moshi")
-    kapt("com.squareup.moshi:moshi-kotlin-codegen:$moshi")
-
-    implementation("ru.gildor.coroutines:kotlin-coroutines-retrofit:1.0.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.11.0")
+    implementation("com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:0.4.0")
 
     api("com.github.iamironz:binaryprefs:$binaryprefs")
 }

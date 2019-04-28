@@ -2,6 +2,7 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
+apply plugin: 'com.getkeepsafe.dexcount'
 apply plugin: 'androidx.navigation.safeargs.kotlin'
 
 
@@ -23,12 +24,10 @@ android {
     buildTypes {
         release {
             minifyEnabled true
-            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
         debug {
             minifyEnabled false
-            shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
@@ -43,6 +42,10 @@ android {
         setSourceCompatibility(JavaVersion.VERSION_1_8)
         setTargetCompatibility(JavaVersion.VERSION_1_8)
     }
+
+    packagingOptions {
+        exclude 'META-INF/atomicfu.kotlin_module'
+    }
 }
 
 androidExtensions { experimental = true }
@@ -55,28 +58,25 @@ dependencies {
     implementation("androidx.annotation:annotation:$androidxAnnotation")
     implementation("androidx.appcompat:appcompat:$androidxAppcompat")
     implementation("androidx.cardview:cardview:$androidxCardview")
-    implementation("androidx.constraintlayout:constraintlayout:$androidxConstraint")
     implementation("androidx.recyclerview:recyclerview:$androidxRecyclerview")
+    implementation("androidx.constraintlayout:constraintlayout:$androidxConstraint")
 //    implementation("com.google.android.material:material:$androidMaterial") TODO Move to new design
 
-    implementation("android.arch.navigation:navigation-fragment-ktx:$androidxNavigation")
-    implementation("android.arch.navigation:navigation-ui:$androidxNavigation")
+    implementation("androidx.navigation:navigation-fragment-ktx:$androidxNavigation")
+    implementation("androidx.navigation:navigation-ui:$androidxNavigation")
 
-    implementation("com.github.bumptech.glide:glide:4.8.0")
+    implementation("com.github.bumptech.glide:glide:4.9.0")
 
     kapt("androidx.room:room-compiler:$androidxRroom")
 
     implementation("androidx.lifecycle:lifecycle-extensions:$androidxLifecycle")
     implementation("androidx.lifecycle:lifecycle-runtime:$androidxLifecycle")
-    kapt("androidx.lifecycle:lifecycle-compiler:$androidxLifecycle")
+    implementation("androidx.lifecycle:lifecycle-common-java8:$androidxLifecycle")
+//    kapt("androidx.lifecycle:lifecycle-compiler:$androidxLifecycle")
     implementation("org.koin:koin-android:$koin")
     implementation("org.koin:koin-androidx-viewmodel:$koin")
 
-    api("com.jakewharton.threetenabp:threetenabp:$threetenabp")
-
-    implementation("com.datatheorem.android.trustkit:trustkit:1.1.0")
+    implementation("com.jakewharton.threetenabp:threetenabp:$threetenabp")
 
     debugImplementation("com.squareup.leakcanary:leakcanary-android:$leakcanary")
-    debugImplementation("com.squareup.leakcanary:leakcanary-support-fragment:$leakcanary")
-    releaseImplementation("com.squareup.leakcanary:leakcanary-android-no-op:$leakcanary")
 }

@@ -1,16 +1,17 @@
 package info.dvkr.switchmovie.data.repository.api
 
 import com.elvishew.xlog.XLog
+import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import info.dvkr.switchmovie.domain.model.Movie
 import info.dvkr.switchmovie.domain.utils.Either
 import info.dvkr.switchmovie.domain.utils.getLog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
+import okhttp3.MediaType
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
-import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.create
-import ru.gildor.coroutines.retrofit.await
 
 
 class MovieApiService(
@@ -19,11 +20,12 @@ class MovieApiService(
     private val apiKey: String,
     private val apiBaseImageUrl: String
 ) {
+
     private val movieApi: MovieApi.Service =
         Retrofit.Builder()
             .client(okHttpClient)
             .baseUrl(apiBaseUrl)
-            .addConverterFactory(MoshiConverterFactory.create())
+            .addConverterFactory(Json.nonstrict.asConverterFactory(MediaType.get("application/json")))
             .build()
             .create()
 
@@ -52,12 +54,11 @@ class MovieApiService(
                 isRequestInProgress = true
 
                 try {
-                    movieApi.getNowPlaying(apiKey, page).await()
+                    movieApi.getNowPlaying(apiKey, page)
                         .items.map { it.toMovie(apiBaseImageUrl) }
                 } finally {
                     isRequestInProgress = false
                 }
             }
-
         }
 }

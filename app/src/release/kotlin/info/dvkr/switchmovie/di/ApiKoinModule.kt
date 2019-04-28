@@ -1,8 +1,8 @@
 package info.dvkr.switchmovie.di
 
-import com.datatheorem.android.trustkit.TrustKit
 import info.dvkr.switchmovie.data.repository.api.MovieApiService
 import okhttp3.Cache
+import okhttp3.CertificatePinner
 import okhttp3.OkHttpClient
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
@@ -14,9 +14,10 @@ val apiKoinModule = module {
     single {
         OkHttpClient().newBuilder()
             .cache(Cache(androidContext().applicationContext.cacheDir, cacheSize))
-            .sslSocketFactory(
-                TrustKit.getInstance().getSSLSocketFactory(getProperty("API_BASE_DOMAIN")),
-                TrustKit.getInstance().getTrustManager(getProperty("API_BASE_DOMAIN"))
+            .certificatePinner(
+                CertificatePinner.Builder()
+                    .add(getProperty("API_BASE_DOMAIN"), getProperty("API_BASE_DOMAIN_CERT_HASH"))
+                    .build()
             )
             .build()
     }

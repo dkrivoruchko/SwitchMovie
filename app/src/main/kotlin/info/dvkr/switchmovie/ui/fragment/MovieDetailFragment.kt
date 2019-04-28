@@ -19,7 +19,7 @@ import info.dvkr.switchmovie.data.viewmodel.moviedetail.MovieDetailViewModel
 import info.dvkr.switchmovie.domain.model.Movie
 import info.dvkr.switchmovie.domain.utils.getLog
 import kotlinx.android.synthetic.main.fragment_movie_detail.*
-import org.koin.androidx.viewmodel.ext.viewModel
+import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.*

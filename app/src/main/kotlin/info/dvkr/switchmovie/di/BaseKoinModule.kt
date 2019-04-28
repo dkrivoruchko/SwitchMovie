@@ -19,6 +19,7 @@ import info.dvkr.switchmovie.domain.usecase.base.BaseUseCase
 import kotlinx.coroutines.newSingleThreadContext
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
+import org.koin.core.qualifier.named
 import org.koin.dsl.bind
 import org.koin.dsl.module
 
@@ -42,16 +43,15 @@ val baseKoinModule = module {
         Room.databaseBuilder(androidContext().applicationContext, AppDatabase::class.java, "SwitchMovieDB").build()
     }
 
-
-    single("ViewModelCoroutineDispatcher") { newSingleThreadContext("ViewModelContext") }
-    factory("ViewModelScope") { BaseViewModel.viewModelScope(get("ViewModelCoroutineDispatcher")) }
-    factory("UseCaseScope") { BaseUseCase.useCaseScope }
+    single(named("ViewModelCoroutineDispatcher")) { newSingleThreadContext("ViewModelContext") }
+    factory(named("ViewModelScope")) { BaseViewModel.viewModelScope(get(named("ViewModelCoroutineDispatcher"))) }
+    factory(named("UseCaseScope")) { BaseUseCase.useCaseScope }
 
     single { MovieLocalService(get<AppDatabase>().movieDao(), get()) }
     single { MovieRepositoryImpl(get(), get()) as MovieRepository.RW } bind MovieRepository.RO::class
 
-    single { MoviesUseCase(get("UseCaseScope"), get()) }
+    single { MoviesUseCase(get(named("UseCaseScope")), get()) }
 
-    viewModel { MovieGridViewModel(get("ViewModelScope"), get()) }
-    viewModel { MovieDetailViewModel(get("ViewModelScope"), get()) }
+    viewModel { MovieGridViewModel(get(named("ViewModelScope")), get()) }
+    viewModel { MovieDetailViewModel(get(named("ViewModelScope")), get()) }
 }

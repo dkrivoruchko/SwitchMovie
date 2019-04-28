@@ -22,7 +22,7 @@ import info.dvkr.switchmovie.domain.utils.getLog
 import kotlinx.android.extensions.LayoutContainer
 import kotlinx.android.synthetic.main.fragment_movie_grid.*
 import kotlinx.android.synthetic.main.item_movie.*
-import org.koin.androidx.viewmodel.ext.viewModel
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MovieGridFragment : Fragment() {
 
