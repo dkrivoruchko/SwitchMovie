@@ -20,9 +20,9 @@ sealed class Either<out F : Throwable, out S> {
     companion object {
         inline operator fun <reified F : Throwable, reified S> invoke(block: () -> S): Either<F, S> =
             try {
-                Either.Success(block())
+                Success(block())
             } catch (e: Throwable) {
-                Either.Failure(e as F)
+                Failure(e as F)
             }
     }
 

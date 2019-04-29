@@ -21,10 +21,10 @@ abstract class BaseViewModel(viewModelScope: CoroutineScope) : ViewModel(), Coro
     interface Event
     data class Error(val throwable: Throwable) : Event
 
-    internal abstract val viewModelEventChannel: SendChannel<BaseViewModel.Event>
+    internal abstract val viewModelEventChannel: SendChannel<Event>
 
     @AnyThread
-    fun onEvent(event: BaseViewModel.Event) {
+    fun onEvent(event: Event) {
         XLog.d(getLog("onEvent", "$event"))
 
         if (coroutineContext.isActive.not()) {

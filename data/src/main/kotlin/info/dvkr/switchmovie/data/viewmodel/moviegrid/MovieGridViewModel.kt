@@ -47,13 +47,13 @@ class MovieGridViewModel(
         copy(workInProgressCounter = workInProgressCounter - 1)
     }
 
-    private sealed class MovieGridViewModelEvent : BaseViewModel.Event {
+    private sealed class MovieGridViewModelEvent : Event {
         object Init : MovieGridViewModelEvent()
 
         override fun toString(): String = this::class.java.simpleName
     }
 
-    override val viewModelEventChannel: SendChannel<BaseViewModel.Event> = actor(capacity = 8) {
+    override val viewModelEventChannel: SendChannel<Event> = actor(capacity = 8) {
         consumeEach { event ->
             try {
                 when (event) {
@@ -63,7 +63,7 @@ class MovieGridViewModel(
                             .process(moviesUseCase)
                             .onAny { movieGridState.decreaseWorkInProgress() }
                             .onSuccess { movieGridState.updateState { copy(moviesLiveData = it) } }
-                            .onFailure { onEvent(BaseViewModel.Error(it)) }
+                            .onFailure { onEvent(Error(it)) }
 
                     MovieGridViewEvent.Refresh ->
                         MoviesUseCase.Request.ClearMovies()
@@ -71,7 +71,7 @@ class MovieGridViewModel(
                             .process(moviesUseCase)
                             .onAny { movieGridState.decreaseWorkInProgress() }
                             .onSuccess { onEvent(MovieGridViewEvent.LoadMore) }
-                            .onFailure { onEvent(BaseViewModel.Error(it)) }
+                            .onFailure { onEvent(Error(it)) }
 
                     MovieGridViewEvent.LoadMore ->
                         MoviesUseCase.Request.LoadMoreMovies()
@@ -79,7 +79,7 @@ class MovieGridViewModel(
                             .process(moviesUseCase)
                             .onAny { movieGridState.decreaseWorkInProgress() }
                             .onSuccess { }
-                            .onFailure { onEvent(BaseViewModel.Error(it)) }
+                            .onFailure { onEvent(Error(it)) }
 
                     MovieGridViewEvent.Update ->
                         MoviesUseCase.Request.UpdateMovies()
@@ -87,7 +87,7 @@ class MovieGridViewModel(
                             .process(moviesUseCase)
                             .onAny { movieGridState.decreaseWorkInProgress() }
                             .onSuccess { onEvent(MovieGridViewEvent.LoadMore) }
-                            .onFailure { onEvent(BaseViewModel.Error(it)) }
+                            .onFailure { onEvent(Error(it)) }
 
                     is MovieGridViewEvent.SetMovieStar ->
                         MoviesUseCase.Request.SetMovieStar(event.movieId)
@@ -105,7 +105,7 @@ class MovieGridViewModel(
                             .onSuccess { }
                             .onFailure { }
 
-                    is BaseViewModel.Error ->
+                    is Error ->
                         movieGridState.updateState { copy(error = event.throwable) }
 
                     else -> throw IllegalStateException("MovieGridViewModel: Unknown event: $event")

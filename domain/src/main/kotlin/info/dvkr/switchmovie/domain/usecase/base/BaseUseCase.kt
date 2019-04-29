@@ -27,13 +27,13 @@ abstract class BaseUseCase(useCaseScope: CoroutineScope) : CoroutineScope by use
 
     abstract class Request<R> {
         private val resultDeffered: CompletableDeferred<Either<Throwable, R>> = CompletableDeferred()
-        private var runOnStart: () -> Any = { }
+        private lateinit var runOnStart: () -> Any
 
         fun onStart(block: () -> Any): Request<R> = this.apply { runOnStart = block }
 
         suspend fun process(baseUseCase: BaseUseCase): Either<Throwable, R> =
             Either<Throwable, Unit> {
-                runOnStart()
+                if (::runOnStart.isInitialized) runOnStart.invoke()
                 baseUseCase.enqueueForExecution(this@Request)
             }
                 .flatMap { resultDeffered.await() }
