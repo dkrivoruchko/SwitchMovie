@@ -9,8 +9,10 @@ import kotlin.coroutines.CoroutineContext
 
 abstract class BaseActivity : AppCompatActivity(), CoroutineScope {
 
-    override val coroutineContext: CoroutineContext
-        get() = SupervisorJob() + Dispatchers.Main + CoroutineExceptionHandler { _, throwable ->
+    private val supervisorJob = SupervisorJob()
+
+    override val coroutineContext: CoroutineContext =
+        supervisorJob + Dispatchers.Main + CoroutineExceptionHandler { _, throwable ->
             XLog.e(getLog("onCoroutineException"), throwable)
         }
 

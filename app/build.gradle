@@ -39,13 +39,16 @@ android {
     }
 
     compileOptions {
-        setSourceCompatibility(JavaVersion.VERSION_1_8)
-        setTargetCompatibility(JavaVersion.VERSION_1_8)
+        sourceCompatibility = '1.8'
+        targetCompatibility = '1.8'
+    }
+
+    kotlinOptions {
+        jvmTarget = "1.8"
     }
 }
 
 androidExtensions { experimental = true }
-kapt { useBuildCache = true }
 
 dependencies {
     implementation project(':domain')
@@ -68,7 +71,6 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-extensions:$androidxLifecycle")
     implementation("androidx.lifecycle:lifecycle-runtime:$androidxLifecycle")
     implementation("androidx.lifecycle:lifecycle-common-java8:$androidxLifecycle")
-//    kapt("androidx.lifecycle:lifecycle-compiler:$androidxLifecycle")
     implementation("org.koin:koin-android:$koin")
     implementation("org.koin:koin-androidx-viewmodel:$koin")
 

@@ -8,7 +8,7 @@ import info.dvkr.switchmovie.domain.utils.getLog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
-import okhttp3.MediaType
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.create
@@ -25,7 +25,7 @@ class MovieApiService(
         Retrofit.Builder()
             .client(okHttpClient)
             .baseUrl(apiBaseUrl)
-            .addConverterFactory(Json.nonstrict.asConverterFactory(MediaType.get("application/json")))
+            .addConverterFactory(Json.nonstrict.asConverterFactory("application/json".toMediaType()))
             .build()
             .create()
 

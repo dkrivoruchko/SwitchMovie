@@ -34,12 +34,14 @@ android {
     }
 
     compileOptions {
-        setSourceCompatibility(JavaVersion.VERSION_1_8)
-        setTargetCompatibility(JavaVersion.VERSION_1_8)
+        sourceCompatibility = '1.8'
+        targetCompatibility = '1.8'
+    }
+
+    kotlinOptions {
+        jvmTarget = "1.8"
     }
 }
-
-kapt { useBuildCache = true }
 
 dependencies {
     implementation project(':domain')
@@ -54,7 +56,6 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-livedata:$androidxLifecycle")
     implementation("androidx.lifecycle:lifecycle-runtime:$androidxLifecycle")
     implementation("androidx.lifecycle:lifecycle-common-java8:$androidxLifecycle")
-//    kapt("androidx.lifecycle:lifecycle-compiler:$androidxLifecycle")
 
     api("androidx.room:room-runtime:$androidxRroom")
     kapt("androidx.room:room-compiler:$androidxRroom")
@@ -65,7 +66,7 @@ dependencies {
     api("com.squareup.okhttp3:okhttp:$okhttp")
     api("com.squareup.okhttp3:logging-interceptor:$okhttp")
     implementation("com.squareup.retrofit2:retrofit:$retrofit")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.11.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.11.1")
     implementation("com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:0.4.0")
 
     api("com.github.iamironz:binaryprefs:$binaryprefs")

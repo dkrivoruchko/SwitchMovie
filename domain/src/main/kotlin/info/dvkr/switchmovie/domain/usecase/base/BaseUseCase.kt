@@ -9,13 +9,6 @@ import kotlinx.coroutines.channels.SendChannel
 
 abstract class BaseUseCase(useCaseScope: CoroutineScope) : CoroutineScope by useCaseScope {
 
-    companion object {
-        val useCaseScope: CoroutineScope
-            get() = CoroutineScope(SupervisorJob() + Dispatchers.Default + CoroutineExceptionHandler { _, throwable ->
-                XLog.e(getLog("onCoroutineException"), throwable)
-            })
-    }
-
     protected abstract val useCaseRequestChannel: SendChannel<Request<*>>
 
     private fun enqueueForExecution(request: Request<*>) {

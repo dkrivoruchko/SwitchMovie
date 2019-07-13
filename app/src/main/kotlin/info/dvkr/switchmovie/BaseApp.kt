@@ -10,6 +10,7 @@ import kotlinx.coroutines.launch
 import org.conscrypt.Conscrypt
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidFileProperties
+import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.startKoin
 import java.security.Security
 
@@ -22,9 +23,10 @@ abstract class BaseApp : Application() {
         Security.insertProviderAt(Conscrypt.newProvider(), 1)
 
         startKoin {
+            androidLogger()
             androidContext(this@BaseApp)
             androidFileProperties()
-            modules(baseKoinModule, apiKoinModule)
+            modules(listOf(baseKoinModule, apiKoinModule))
         }
 
         initLogger()
@@ -32,7 +34,7 @@ abstract class BaseApp : Application() {
         val defaultHandler = Thread.getDefaultUncaughtExceptionHandler()
         Thread.setDefaultUncaughtExceptionHandler { thread: Thread, throwable: Throwable ->
             XLog.e("Uncaught throwable in thread ${thread.name}", throwable)
-            defaultHandler.uncaughtException(thread, throwable)
+            defaultHandler?.uncaughtException(thread, throwable)
         }
 
         GlobalScope.launch { AndroidThreeTen.init(this@BaseApp) }

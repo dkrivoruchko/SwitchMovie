@@ -11,14 +11,8 @@ import kotlinx.coroutines.channels.SendChannel
 
 abstract class BaseViewModel(viewModelScope: CoroutineScope) : ViewModel(), CoroutineScope by viewModelScope {
 
-    companion object {
-        fun viewModelScope(dispatcher: ExecutorCoroutineDispatcher): CoroutineScope =
-            CoroutineScope(SupervisorJob() + dispatcher + CoroutineExceptionHandler { _, throwable ->
-                XLog.e(getLog("onCoroutineException"), throwable)
-            })
-    }
-
     interface Event
+
     data class Error(val throwable: Throwable) : Event
 
     internal abstract val viewModelEventChannel: SendChannel<Event>
