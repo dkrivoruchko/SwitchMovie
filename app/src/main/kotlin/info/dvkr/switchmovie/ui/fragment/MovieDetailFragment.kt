@@ -10,7 +10,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.navigation.fragment.navArgs
-import com.bumptech.glide.Glide
+import coil.api.load
 import com.elvishew.xlog.XLog
 import info.dvkr.switchmovie.R
 import info.dvkr.switchmovie.data.viewmodel.BaseViewModel
@@ -57,9 +57,7 @@ class MovieDetailFragment : Fragment() {
                 movie != null || return@MovieObserver
                 requireActivity().title = movie.title
 
-                Glide.with(requireContext())
-                    .load(movie.posterPath)
-                    .into(iv_fragment_movie_detail_image)
+                iv_fragment_movie_detail_image.load(movie.posterPath)
 
                 tv_fragment_movie_detail_score.text = movie.voteAverage
                 tv_fragment_movie_detail_rating.text = movie.popularity.toString()

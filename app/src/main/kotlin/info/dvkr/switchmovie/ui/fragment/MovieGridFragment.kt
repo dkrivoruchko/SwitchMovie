@@ -12,7 +12,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.Transformations
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.*
-import com.bumptech.glide.Glide
+import coil.api.load
 import com.elvishew.xlog.XLog
 import info.dvkr.switchmovie.R
 import info.dvkr.switchmovie.data.viewmodel.moviegrid.MovieGridViewEvent
@@ -170,7 +170,7 @@ class MovieGridFragment : Fragment() {
         private val colorAccent by lazy { ContextCompat.getColor(containerView.context, R.color.colorAccent) }
 
         fun bind(item: MovieGridViewItem) {
-            Glide.with(containerView.context.applicationContext).load(item.posterPath).into(ib_item_movie)
+            ib_item_movie.load(item.posterPath)
             // TODO Add shared element transition
             ib_item_movie.setOnClickListener {
                 it.findNavController().navigate(
