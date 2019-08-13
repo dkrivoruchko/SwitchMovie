@@ -17,7 +17,7 @@ class MovieLocalService(
         return movieDao.getAll()
     }
 
-    fun getMovieById(movieId: Int): Movie? {
+    suspend fun getMovieById(movieId: Int): Movie? {
         XLog.d(getLog("getMovieById", "$movieId"))
         return movieDao.getMovieById(movieId)
     }
@@ -32,17 +32,17 @@ class MovieLocalService(
         return LocalDate.ofEpochDay(settings.lastMovieUpdateDate)
     }
 
-    fun addMovies(inMovieList: List<Movie>) {
+    suspend fun addMovies(inMovieList: List<Movie>) {
         XLog.d(getLog("addMovies", inMovieList.joinToString()))
         movieDao.insertAll(inMovieList.map { MovieLocal.MovieConverter.fromMovieToMovieDb(it) })
     }
 
-    fun updateMovie(inMovie: Movie) {
+    suspend fun updateMovie(inMovie: Movie) {
         XLog.d(getLog("updateMovie", "$inMovie"))
         movieDao.insert(inMovie.let { MovieLocal.MovieConverter.fromMovieToMovieDb(it) })
     }
 
-    fun deleteAll() {
+    suspend fun deleteAll() {
         XLog.d(getLog("deleteAll", "Invoked"))
         movieDao.deleteAll()
     }

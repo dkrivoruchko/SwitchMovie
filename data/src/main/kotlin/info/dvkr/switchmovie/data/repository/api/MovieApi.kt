@@ -4,6 +4,7 @@ package info.dvkr.switchmovie.data.repository.api
 import info.dvkr.switchmovie.domain.model.Movie
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import retrofit2.SkipCallbackExecutor
 import retrofit2.http.GET
 import retrofit2.http.Query
 
@@ -44,6 +45,7 @@ object MovieApi {
 
     interface Service {
 
+        @SkipCallbackExecutor
         @GET("movie/now_playing")
 //        @Headers("Cache-Control: private, max-age=600, max-stale=600")
         suspend fun getNowPlaying(

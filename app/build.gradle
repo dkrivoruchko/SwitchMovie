@@ -54,6 +54,11 @@ dependencies {
     implementation project(':domain')
     implementation project(':data')
 
+    implementation("org.jetbrains:annotations:$jetbrainsAnnotations")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutineVersion")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutineVersion")
+
     implementation("androidx.annotation:annotation:$androidxAnnotation")
     implementation("androidx.appcompat:appcompat:$androidxAppcompat")
     implementation("androidx.cardview:cardview:$androidxCardview")
@@ -66,15 +71,24 @@ dependencies {
 
     implementation("com.github.bumptech.glide:glide:4.9.0")
 
+    implementation("androidx.room:room-runtime:$androidxRroom")
     kapt("androidx.room:room-compiler:$androidxRroom")
+    implementation("androidx.room:room-ktx:$androidxRroom")
 
     implementation("androidx.lifecycle:lifecycle-extensions:$androidxLifecycle")
     implementation("androidx.lifecycle:lifecycle-runtime:$androidxLifecycle")
     implementation("androidx.lifecycle:lifecycle-common-java8:$androidxLifecycle")
+
     implementation("org.koin:koin-android:$koin")
     implementation("org.koin:koin-androidx-viewmodel:$koin")
 
+    implementation("com.squareup.okio:okio:$okio")
+    implementation("com.squareup.okhttp3:okhttp:$okhttp")
+    implementation("com.squareup.okhttp3:logging-interceptor:$okhttp")
+
     implementation("com.jakewharton.threetenabp:threetenabp:$threetenabp")
+    implementation("com.github.iamironz:binaryprefs:$binaryprefs")
+    implementation("com.elvishew:xlog:$xlog")
 
     debugImplementation("com.squareup.leakcanary:leakcanary-android:$leakcanary")
 }

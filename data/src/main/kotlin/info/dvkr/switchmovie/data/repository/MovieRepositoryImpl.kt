@@ -17,9 +17,10 @@ class MovieRepositoryImpl(
 
     override fun getMovies(): LiveData<List<Movie>> = movieLocalService.getMovies()
 
-    override fun getMovieById(movieId: Int): Movie? = movieLocalService.getMovieById(movieId)
+    override suspend fun getMovieById(movieId: Int): Movie? = movieLocalService.getMovieById(movieId)
 
-    override fun getMovieByIdLiveData(movieId: Int): LiveData<Movie> = movieLocalService.getMovieByIdLiveData(movieId)
+    override fun getMovieByIdLiveData(movieId: Int): LiveData<Movie> =
+        movieLocalService.getMovieByIdLiveData(movieId)
 
     override fun getLastMovieUpdateDate(): LocalDate = movieLocalService.getLastMovieUpdateDate()
 
@@ -29,11 +30,11 @@ class MovieRepositoryImpl(
 
     override suspend fun loadMoreMovies(): Either<Throwable, List<Movie>> = movieApiService.loadMoreMovies()
 
-    override fun addMovies(inMovieList: List<Movie>) = movieLocalService.addMovies(inMovieList)
+    override suspend fun addMovies(inMovieList: List<Movie>) = movieLocalService.addMovies(inMovieList)
 
-    override fun updateMovie(movie: Movie) = movieLocalService.updateMovie(movie)
+    override suspend fun updateMovie(movie: Movie) = movieLocalService.updateMovie(movie)
 
-    override fun deleteMovies() = movieLocalService.deleteAll()
+    override suspend fun deleteMovies() = movieLocalService.deleteAll()
 
     override fun setLastMovieUpdateDate(localDate: LocalDate) = movieLocalService.setLastMovieUpdateDate(localDate)
 }

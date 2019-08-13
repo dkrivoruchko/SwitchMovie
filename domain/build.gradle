@@ -48,6 +48,6 @@ dependencies {
 
     implementation("androidx.lifecycle:lifecycle-livedata-core:$androidxLifecycle")
 
-    api("org.threeten:threetenbp:$threetenbp:no-tzdb")
-    api("com.elvishew:xlog:$xlog")
+    implementation("org.threeten:threetenbp:$threetenbp:no-tzdb")
+    implementation("com.elvishew:xlog:$xlog")
 }

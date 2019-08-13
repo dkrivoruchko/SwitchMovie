@@ -44,49 +44,48 @@ class MovieDetailFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         XLog.d(getLog("onViewCreated", "Invoked"))
 
-        viewModel.getMovieDetailSateLiveData()
-            .observe(viewLifecycleOwner, androidx.lifecycle.Observer { movieDetailState ->
-                XLog.d(getLog("getMovieDetailSateLiveData", movieDetailState.toString()))
+        viewModel.stateLiveData().observe(viewLifecycleOwner, androidx.lifecycle.Observer { state ->
+            val movieDetailState = state as? MovieDetailViewModel.MovieDetailSate ?: return@Observer
+            XLog.d(getLog("stateLiveData", movieDetailState.toString()))
 
-                movieDetailState != null || return@Observer
-                movieLiveData?.removeObservers(viewLifecycleOwner)
-                movieLiveData = movieDetailState.movieLiveData
+            movieLiveData?.removeObservers(viewLifecycleOwner)
+            movieLiveData = movieDetailState.movieLiveData
 
-                movieLiveData?.observe(viewLifecycleOwner, androidx.lifecycle.Observer MovieObserver@{ movie ->
-                    XLog.d(getLog("movieLiveData", movie.toString()))
+            movieLiveData?.observe(viewLifecycleOwner, androidx.lifecycle.Observer MovieObserver@{ movie ->
+                XLog.d(getLog("movieLiveData", movie.toString()))
 
-                    movie != null || return@MovieObserver
-                    requireActivity().title = movie.title
+                movie != null || return@MovieObserver
+                requireActivity().title = movie.title
 
-                    Glide.with(requireContext())
-                        .load(movie.posterPath)
-                        .into(iv_fragment_movie_detail_image)
+                Glide.with(requireContext())
+                    .load(movie.posterPath)
+                    .into(iv_fragment_movie_detail_image)
 
-                    tv_fragment_movie_detail_score.text = movie.voteAverage
-                    tv_fragment_movie_detail_rating.text = movie.popularity.toString()
+                tv_fragment_movie_detail_score.text = movie.voteAverage
+                tv_fragment_movie_detail_rating.text = movie.popularity.toString()
 
-                    try {
-                        val date = dateParser.parse(movie.releaseDate)
-                        tv_fragment_movie_detail_date.text = dateFormatter.format(date)
-                    } catch (ex: ParseException) {
-                        tv_fragment_movie_detail_date.text = movie.releaseDate
-                        viewModel.onEvent(BaseViewModel.Error(ex))
-                    }
-
-                    tv_fragment_movie_detail_title.text = movie.title
-                    tv_fragment_movie_detail_overview.text = movie.overview
-                    iv_fragment_movie_detail_start.imageTintList =
-                        ColorStateList.valueOf(if (movie.isStar) colorAccent else colorWhite)
-                })
-
-                sr_fragment_movie_detail.isRefreshing = movieDetailState.workInProgressCounter > 0
-
-                if (error != movieDetailState.error) {
-                    movieDetailState.error?.run {
-                        Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
-                    }
+                try {
+                    val date = dateParser.parse(movie.releaseDate)
+                    tv_fragment_movie_detail_date.text = dateFormatter.format(date)
+                } catch (ex: ParseException) {
+                    tv_fragment_movie_detail_date.text = movie.releaseDate
+                    viewModel.onEvent(BaseViewModel.Error(ex))
                 }
+
+                tv_fragment_movie_detail_title.text = movie.title
+                tv_fragment_movie_detail_overview.text = movie.overview
+                iv_fragment_movie_detail_start.imageTintList =
+                    ColorStateList.valueOf(if (movie.isStar) colorAccent else colorWhite)
             })
+
+            sr_fragment_movie_detail.isRefreshing = movieDetailState.workInProgressCounter > 0
+
+            if (error != movieDetailState.error) {
+                movieDetailState.error?.run {
+                    Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
+                }
+            }
+        })
 
         viewModel.onEvent(MovieDetailViewEvent.GetMovieById(args.movieId))
     }

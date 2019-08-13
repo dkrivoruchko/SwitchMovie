@@ -2,8 +2,6 @@ package info.dvkr.switchmovie.data.viewmodel.moviedetail
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Transformations
 import com.elvishew.xlog.XLog
 import info.dvkr.switchmovie.data.viewmodel.BaseViewModel
 import info.dvkr.switchmovie.domain.model.Movie
@@ -13,6 +11,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.channels.actor
 import kotlinx.coroutines.channels.consumeEach
+import kotlin.properties.Delegates.observable
 
 class MovieDetailViewModel(
     viewModelScope: CoroutineScope,
@@ -21,20 +20,41 @@ class MovieDetailViewModel(
 
     data class MovieDetailSate(
         val movieLiveData: LiveData<Movie> = MediatorLiveData(),
+
         val workInProgressCounter: Int = 0,
         val error: Throwable? = null
-    )
+    ) : State
 
-    private var movieDetailState = MovieDetailSate()
-    private val movieDetailStateLiveData = MutableLiveData<MovieDetailSate>()
+    override val eventChannel: SendChannel<Event> = actor(capacity = 8) {
+        consumeEach { event ->
+            try {
+                XLog.d(getLog("eventHandler", "$event"))
+                when (event) {
+                    is MovieDetailViewEvent.GetMovieById ->
+                        MoviesUseCase.Request.GetMovieByIdLiveData(event.movieId)
+                            .onStart { state.increaseWorkInProgress() }
+                            .process(moviesUseCase)
+                            .onAny { state.decreaseWorkInProgress() }
+                            .onSuccess { state.updateState { copy(movieLiveData = it) } }
+                            .onFailure { state.updateState { copy(error = it) } }
 
-    fun getMovieDetailSateLiveData(): LiveData<MovieDetailSate> =
-        Transformations.distinctUntilChanged(movieDetailStateLiveData)
+                    else -> throw IllegalStateException("MovieDetailViewModel: Unknown event: $event")
+                }
+            } catch (throwable: Throwable) {
+                XLog.e(this@MovieDetailViewModel.getLog("actor"), throwable)
+                state.updateState { copy(error = throwable) }
+            }
+        }
+    }
+
+    private var state: MovieDetailSate by observable(MovieDetailSate()) { _, _, newValue ->
+        require(newValue.workInProgressCounter >= 0)
+        XLog.d(getLog("Sate", "$newValue"))
+        stateLiveData.postValue(newValue)
+    }
 
     private fun MovieDetailSate.updateState(block: MovieDetailSate.() -> MovieDetailSate) {
-        movieDetailState = block(this)
-        XLog.d(getLog("updateState", "New state: $movieDetailState"))
-        movieDetailStateLiveData.postValue(movieDetailState)
+        state = block(this)
     }
 
     private fun MovieDetailSate.increaseWorkInProgress() = updateState {
@@ -42,28 +62,6 @@ class MovieDetailViewModel(
     }
 
     private fun MovieDetailSate.decreaseWorkInProgress() = updateState {
-        require(workInProgressCounter > 0) { "workInProgressCounter: $workInProgressCounter <= 0" }
         copy(workInProgressCounter = workInProgressCounter - 1)
-    }
-
-    override val viewModelEventChannel: SendChannel<BaseViewModel.Event> = actor(capacity = 8) {
-        consumeEach { event ->
-            try {
-                when (event) {
-                    is MovieDetailViewEvent.GetMovieById ->
-                        MoviesUseCase.Request.GetMovieByIdLiveData(event.movieId)
-                            .onStart { movieDetailState.increaseWorkInProgress() }
-                            .process(moviesUseCase)
-                            .onAny { movieDetailState.decreaseWorkInProgress() }
-                            .onSuccess { movieDetailState.updateState { copy(movieLiveData = it) } }
-                            .onFailure { movieDetailState.updateState { copy(error = it) } }
-
-                    else -> throw IllegalStateException("MovieDetailViewModel: Unknown event: $event")
-                }
-            } catch (throwable: Throwable) {
-                XLog.e(this@MovieDetailViewModel.getLog("actor"), throwable)
-                movieDetailState.updateState { copy(error = throwable) }
-            }
-        }
     }
 }

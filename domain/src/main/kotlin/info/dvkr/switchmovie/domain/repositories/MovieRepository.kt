@@ -11,7 +11,7 @@ interface MovieRepository {
 
         fun getMovies(): LiveData<List<Movie>>
 
-        fun getMovieById(movieId: Int): Movie?
+        suspend fun getMovieById(movieId: Int): Movie?
 
         fun getMovieByIdLiveData(movieId: Int): LiveData<Movie>
 
@@ -24,11 +24,11 @@ interface MovieRepository {
 
         suspend fun loadMoreMovies(): Either<Throwable, List<Movie>>
 
-        fun addMovies(inMovieList: List<Movie>)
+        suspend fun addMovies(inMovieList: List<Movie>)
 
-        fun updateMovie(movie: Movie)
+        suspend fun updateMovie(movie: Movie)
 
-        fun deleteMovies()
+        suspend fun deleteMovies()
 
         fun setLastMovieUpdateDate(localDate: LocalDate)
     }

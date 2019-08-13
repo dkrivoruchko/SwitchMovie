@@ -65,29 +65,27 @@ class MovieGridFragment : Fragment() {
             })
         }
 
-        viewModel.getMovieGridStateLiveData()
-            .observe(viewLifecycleOwner, androidx.lifecycle.Observer { movieGridState ->
-                XLog.d(getLog("getMovieGridStateLiveData", movieGridState.toString()))
+        viewModel.stateLiveData().observe(viewLifecycleOwner, androidx.lifecycle.Observer { state ->
+            val movieGridState = state as? MovieGridViewModel.MovieGridState ?: return@Observer
+            XLog.d(getLog("stateLiveData", movieGridState.toString()))
 
-                movieGridState != null || return@Observer
+            if (moviesLiveData != movieGridState.moviesLiveData) {
+                moviesLiveData = movieGridState.moviesLiveData
 
-                if (moviesLiveData != movieGridState.moviesLiveData) {
-                    moviesLiveData = movieGridState.moviesLiveData
-
-                    movieGridViewItemLiveData?.removeObservers(viewLifecycleOwner)
-                    movieGridViewItemLiveData = Transformations.map(movieGridState.moviesLiveData) { list ->
-                        list.map { MovieGridViewItem(it.id, it.posterPath, it.isStar) }
-                    }
-                    movieGridViewItemLiveData?.observe(viewLifecycleOwner, androidx.lifecycle.Observer {
-                        XLog.d(getLog("getMovieGridModelLiveData.submitList", it.toString()))
-                        movieAdapter?.submitList(it)
-                    })
+                movieGridViewItemLiveData?.removeObservers(viewLifecycleOwner)
+                movieGridViewItemLiveData = Transformations.map(movieGridState.moviesLiveData) { list ->
+                    list.map { MovieGridViewItem(it.id, it.posterPath, it.isStar) }
                 }
+                movieGridViewItemLiveData?.observe(viewLifecycleOwner, androidx.lifecycle.Observer {
+                    XLog.d(getLog("getMovieGridModelLiveData.submitList", it.toString()))
+                    movieAdapter?.submitList(it)
+                })
+            }
 
 //            val invertMovieStarById = movieGridState.invertMovieStarByIdJob?.first
 //            if (invertMovieStarById != null) {
 //                if (invertMovieStarById != currentInvertMovieStarById?.first) {
-                // New movie to invertMovieStarById
+            // New movie to invertMovieStarById
 //                    currentInvertMovieStarById?.second?.let { if (it.isShownOrQueued) it.dismiss() }
 
 //                    val snackbar = SnackbarBuilder(this@MovieGridActivity)
@@ -120,15 +118,15 @@ class MovieGridFragment : Fragment() {
 //                }
 //            }
 
-                sr_fragment_movie_grid.isRefreshing = movieGridState.workInProgressCounter > 0
+            sr_fragment_movie_grid.isRefreshing = movieGridState.workInProgressCounter > 0
 
-                if (error != movieGridState.error) {
-                    error = movieGridState.error
-                    movieGridState.error?.run {
-                        Toast.makeText(requireActivity(), message, Toast.LENGTH_LONG).show()
-                    }
+            if (error != movieGridState.error) {
+                error = movieGridState.error
+                movieGridState.error?.run {
+                    Toast.makeText(requireActivity(), message, Toast.LENGTH_LONG).show()
                 }
-            })
+            }
+        })
 
         sr_fragment_movie_grid.setOnRefreshListener {
             viewModel.onEvent(MovieGridViewEvent.Refresh)

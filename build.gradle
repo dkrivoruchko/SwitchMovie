@@ -5,32 +5,35 @@ buildscript {
         versionPatch = 0
 
         compileSdk = 29
-        buildTools = "29.0.1"
+        buildTools = "29.0.2"
         minSdk = 21
         targetSdk = 29
 
         jetbrainsAnnotations = "17.0.0"
         kotlinVersion = "1.3.41"
-        coroutineVersion = "1.3.0-M2"
+        coroutineVersion = "1.3.0-RC2"
 
         androidxAnnotation = "1.1.0"
         androidxAppcompat = "1.1.0-rc01"
         androidxCardview = "1.0.0"
-        androidxRecyclerview = "1.1.0-beta01"
-        androidxConstraint = "1.1.3"
-        androidxLifecycle = "2.1.0-rc01"
-        androidxNavigation = "2.0.0"
+        androidxRecyclerview = '1.1.0-beta02'
+        androidxConstraint = "2.0.0-beta2"
+        androidxNavigation = "2.1.0-rc01"
         androidxRroom = "2.1.0"
+        androidxLifecycle = "2.1.0-rc01"
 
-        okio = "2.2.2"
+        koin = "2.0.1"
+
+        okio = "2.3.0"
         okhttp = "4.0.1"
-        retrofit = "2.6.0"
+        retrofit = "2.6.1"
+
         threetenbp = "1.4.0"
         threetenabp = "1.2.1"
-        koin = "2.0.1"
+
         binaryprefs = "1.0.1"
         xlog = "1.6.1"
-        leakcanary = "2.0-alpha-3"
+        leakcanary = "2.0-beta-2"
     }
 
     repositories {
@@ -52,7 +55,6 @@ allprojects {
         google()
         jcenter()
         maven { url "https://jitpack.io" }
-        maven { url "https://oss.sonatype.org/content/repositories/snapshots" } // Retrofit 2.6.0 SNAPSHOT
     }
 }
 

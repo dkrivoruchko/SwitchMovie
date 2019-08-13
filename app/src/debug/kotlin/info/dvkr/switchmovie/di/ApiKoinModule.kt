@@ -14,6 +14,7 @@ val apiKoinModule = module {
     val cacheSize: Long = 10 * 1024 * 1024
 
     single {
+        val httpLoggingInterceptor = HttpLoggingInterceptor()
         OkHttpClient().newBuilder()
             .cache(Cache(androidContext().applicationContext.cacheDir, cacheSize))
             .certificatePinner(
@@ -24,7 +25,9 @@ val apiKoinModule = module {
             .addInterceptor { chain ->
                 TrafficStats.setThreadStatsTag(50); chain.proceed(chain.request())
             }
-            .addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.HEADERS))
+            .addInterceptor(httpLoggingInterceptor.apply {
+                httpLoggingInterceptor.level = HttpLoggingInterceptor.Level.HEADERS
+            })
             .build()
     }
 

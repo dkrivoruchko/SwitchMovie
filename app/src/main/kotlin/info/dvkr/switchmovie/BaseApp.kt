@@ -7,12 +7,10 @@ import info.dvkr.switchmovie.di.apiKoinModule
 import info.dvkr.switchmovie.di.baseKoinModule
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import org.conscrypt.Conscrypt
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidFileProperties
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.startKoin
-import java.security.Security
 
 abstract class BaseApp : Application() {
     abstract fun initLogger()
@@ -20,7 +18,7 @@ abstract class BaseApp : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        Security.insertProviderAt(Conscrypt.newProvider(), 1)
+//        Security.insertProviderAt(Conscrypt.newProvider(), 1)
 
         startKoin {
             androidLogger()
