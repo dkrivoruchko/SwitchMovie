@@ -10,7 +10,11 @@ import com.elvishew.xlog.XLog
 import info.dvkr.switchmovie.domain.utils.getLog
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancelChildren
-import kotlinx.coroutines.channels.SendChannel
+import kotlinx.coroutines.channels.BroadcastChannel
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.isActive
 
 
@@ -21,11 +25,18 @@ abstract class BaseViewModel(viewModelScope: CoroutineScope) : ViewModel(), Coro
 
     data class Error(val throwable: Throwable) : Event
 
-    protected val stateLiveData = MutableLiveData<State>()
+    protected abstract suspend fun onEach(event: Event)
 
-    fun stateLiveData(): LiveData<State> = Transformations.distinctUntilChanged(stateLiveData)
+    protected abstract fun onError(throwable: Throwable)
 
-    internal abstract val eventChannel: SendChannel<Event>
+    private val events = BroadcastChannel<Event>(64)
+
+    init {
+        events.asFlow()
+                .onEach { event -> onEach(event) }
+                .catch { throwable -> onError(throwable) }
+                .launchIn(viewModelScope)
+    }
 
     @AnyThread
     fun onEvent(event: Event) {
@@ -37,7 +48,7 @@ abstract class BaseViewModel(viewModelScope: CoroutineScope) : ViewModel(), Coro
         }
 
         try {
-            eventChannel.offer(event) || throw IllegalStateException("ChannelIsFull")
+            events.offer(event) || throw IllegalStateException("ChannelIsFull")
         } catch (th: Throwable) {
             XLog.e(getLog("onEvent"), th)
         }
@@ -49,4 +60,8 @@ abstract class BaseViewModel(viewModelScope: CoroutineScope) : ViewModel(), Coro
         coroutineContext.cancelChildren()
         super.onCleared()
     }
+
+    protected val stateLiveData = MutableLiveData<State>()
+
+    fun stateLiveData(): LiveData<State> = Transformations.distinctUntilChanged(stateLiveData)
 }

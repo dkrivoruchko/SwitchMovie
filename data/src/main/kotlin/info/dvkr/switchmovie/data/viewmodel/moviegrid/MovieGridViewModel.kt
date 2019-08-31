@@ -8,22 +8,19 @@ import info.dvkr.switchmovie.domain.model.Movie
 import info.dvkr.switchmovie.domain.usecase.MoviesUseCase
 import info.dvkr.switchmovie.domain.utils.getLog
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.channels.SendChannel
-import kotlinx.coroutines.channels.actor
-import kotlinx.coroutines.channels.consumeEach
 import kotlin.properties.Delegates.observable
 
 class MovieGridViewModel(
-    viewModelScope: CoroutineScope,
-    private val moviesUseCase: MoviesUseCase
+        viewModelScope: CoroutineScope,
+        private val moviesUseCase: MoviesUseCase
 ) : BaseViewModel(viewModelScope) {
 
     data class MovieGridState(
-        val moviesLiveData: LiveData<List<Movie>> = MediatorLiveData(),
-        val invertMovieStarById: Int = 0,
+            val moviesLiveData: LiveData<List<Movie>> = MediatorLiveData(),
+            val invertMovieStarById: Int = 0,
 
-        val workInProgressCounter: Int = 0,
-        val error: Throwable? = null
+            val workInProgressCounter: Int = 0,
+            val error: Throwable? = null
     ) : State
 
 
@@ -33,69 +30,67 @@ class MovieGridViewModel(
         override fun toString(): String = this::class.java.simpleName
     }
 
-    override val eventChannel: SendChannel<Event> = actor(capacity = 8) {
-        consumeEach { event ->
-            try {
-                XLog.d(getLog("eventHandler", "$event"))
-                when (event) {
-                    MovieGridViewModelEvent.Init ->
-                        MoviesUseCase.Request.GetMoviesLiveData()
-                            .onStart { state.increaseWorkInProgress() }
-                            .process(moviesUseCase)
-                            .onAny { state.decreaseWorkInProgress() }
-                            .onSuccess { state.updateState { copy(moviesLiveData = it) } }
-                            .onFailure { onEvent(Error(it)) }
+    override suspend fun onEach(event: Event) {
+        XLog.d(getLog("onEach", "$event"))
+        when (event) {
+            MovieGridViewModelEvent.Init ->
+                MoviesUseCase.Request.GetMoviesLiveData()
+                        .onStart { state.increaseWorkInProgress() }
+                        .process(moviesUseCase)
+                        .onAny { state.decreaseWorkInProgress() }
+                        .onSuccess { state.updateState { copy(moviesLiveData = it) } }
+                        .onFailure { onEvent(Error(it)) }
 
-                    MovieGridViewEvent.Refresh ->
-                        MoviesUseCase.Request.ClearMovies()
-                            .onStart { state.increaseWorkInProgress() }
-                            .process(moviesUseCase)
-                            .onAny { state.decreaseWorkInProgress() }
-                            .onSuccess { onEvent(MovieGridViewEvent.LoadMore) }
-                            .onFailure { onEvent(Error(it)) }
+            MovieGridViewEvent.Refresh ->
+                MoviesUseCase.Request.ClearMovies()
+                        .onStart { state.increaseWorkInProgress() }
+                        .process(moviesUseCase)
+                        .onAny { state.decreaseWorkInProgress() }
+                        .onSuccess { onEvent(MovieGridViewEvent.LoadMore) }
+                        .onFailure { onEvent(Error(it)) }
 
-                    MovieGridViewEvent.LoadMore ->
-                        MoviesUseCase.Request.LoadMoreMovies()
-                            .onStart { state.increaseWorkInProgress() }
-                            .process(moviesUseCase)
-                            .onAny { state.decreaseWorkInProgress() }
-                            .onSuccess { }
-                            .onFailure { onEvent(Error(it)) }
+            MovieGridViewEvent.LoadMore ->
+                MoviesUseCase.Request.LoadMoreMovies()
+                        .onStart { state.increaseWorkInProgress() }
+                        .process(moviesUseCase)
+                        .onAny { state.decreaseWorkInProgress() }
+                        .onSuccess { }
+                        .onFailure { onEvent(Error(it)) }
 
-                    MovieGridViewEvent.Update ->
-                        MoviesUseCase.Request.UpdateMovies()
-                            .onStart { state.increaseWorkInProgress() }
-                            .process(moviesUseCase)
-                            .onAny { state.decreaseWorkInProgress() }
-                            .onSuccess { onEvent(MovieGridViewEvent.LoadMore) }
-                            .onFailure { onEvent(Error(it)) }
+            MovieGridViewEvent.Update ->
+                MoviesUseCase.Request.UpdateMovies()
+                        .onStart { state.increaseWorkInProgress() }
+                        .process(moviesUseCase)
+                        .onAny { state.decreaseWorkInProgress() }
+                        .onSuccess { onEvent(MovieGridViewEvent.LoadMore) }
+                        .onFailure { onEvent(Error(it)) }
 
-                    is MovieGridViewEvent.SetMovieStar ->
-                        MoviesUseCase.Request.SetMovieStar(event.movieId)
-                            .onStart { state.increaseWorkInProgress() }
-                            .process(moviesUseCase)
-                            .onAny { state.decreaseWorkInProgress() }
-                            .onSuccess { }
-                            .onFailure { }
+            is MovieGridViewEvent.SetMovieStar ->
+                MoviesUseCase.Request.SetMovieStar(event.movieId)
+                        .onStart { state.increaseWorkInProgress() }
+                        .process(moviesUseCase)
+                        .onAny { state.decreaseWorkInProgress() }
+                        .onSuccess { }
+                        .onFailure { }
 
-                    is MovieGridViewEvent.UnsetMovieStar ->
-                        MoviesUseCase.Request.UnsetMovieStar(event.movieId)
-                            .onStart { state.increaseWorkInProgress() }
-                            .process(moviesUseCase)
-                            .onAny { state.decreaseWorkInProgress() }
-                            .onSuccess { }
-                            .onFailure { }
+            is MovieGridViewEvent.UnsetMovieStar ->
+                MoviesUseCase.Request.UnsetMovieStar(event.movieId)
+                        .onStart { state.increaseWorkInProgress() }
+                        .process(moviesUseCase)
+                        .onAny { state.decreaseWorkInProgress() }
+                        .onSuccess { }
+                        .onFailure { }
 
-                    is Error ->
-                        state.updateState { copy(error = event.throwable) }
+            is Error ->
+                state.updateState { copy(error = event.throwable) }
 
-                    else -> throw IllegalStateException("MovieGridViewModel: Unknown event: $event")
-                }
-            } catch (throwable: Throwable) {
-                XLog.e(this@MovieGridViewModel.getLog("actor"), throwable)
-                state.updateState { copy(error = throwable) }
-            }
+            else -> throw IllegalStateException("MovieGridViewModel: Unknown event: $event")
         }
+    }
+
+    override fun onError(throwable: Throwable) {
+        XLog.e(getLog("onError"), throwable)
+        state.updateState { copy(error = throwable) }
     }
 
     init {

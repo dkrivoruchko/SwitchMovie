@@ -46,6 +46,18 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
+
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/license.txt'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/notice.txt'
+        exclude 'META-INF/ASL2.0'
+        pickFirst 'META-INF/kotlinx-coroutines-core.kotlin_module'
+    }
 }
 
 androidExtensions { experimental = true }
@@ -64,12 +76,11 @@ dependencies {
     implementation("androidx.cardview:cardview:$androidxCardview")
     implementation("androidx.recyclerview:recyclerview:$androidxRecyclerview")
     implementation("androidx.constraintlayout:constraintlayout:$androidxConstraint")
-//    implementation("com.google.android.material:material:$androidMaterial") TODO Move to new design
 
-    implementation("androidx.navigation:navigation-fragment-ktx:$androidxNavigation")
+    implementation("androidx.navigation:navigation-fragment-ktx:${androidxNavigation}")
     implementation("androidx.navigation:navigation-ui:$androidxNavigation")
 
-    implementation("io.coil-kt:coil:0.6.0")
+    implementation('io.coil-kt:coil:0.6.1')
 
     implementation("androidx.room:room-runtime:$androidxRroom")
     kapt("androidx.room:room-compiler:$androidxRroom")
