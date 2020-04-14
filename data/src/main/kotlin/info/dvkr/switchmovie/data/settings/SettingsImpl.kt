@@ -1,16 +1,18 @@
 package info.dvkr.switchmovie.data.settings
 
+import android.annotation.SuppressLint
 import com.elvishew.xlog.XLog
 import com.ironz.binaryprefs.Preferences
 import com.ironz.binaryprefs.PreferencesEditor
 import com.ironz.binaryprefs.serialization.serializer.persistable.Persistable
 import info.dvkr.switchmovie.domain.settings.Settings
 import info.dvkr.switchmovie.domain.utils.getLog
-import org.threeten.bp.LocalDate
+import java.time.LocalDate
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
 
+@SuppressLint("NewApi")
 class SettingsImpl(preferences: Preferences) : Settings {
 
     override var lastMovieUpdateDate: Long by bindPreference(

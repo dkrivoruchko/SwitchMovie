@@ -13,7 +13,7 @@ object MovieApi {
 
     @Serializable
     data class MovieRaw(
-        @SerialName("id") val id: Int,
+        @SerialName("id") val id: Long,
         @SerialName("poster_path") val posterPath: String?,
         @SerialName("title") val title: String,
         @SerialName("overview") val overview: String,

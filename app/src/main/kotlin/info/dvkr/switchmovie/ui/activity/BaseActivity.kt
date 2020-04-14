@@ -4,26 +4,21 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.elvishew.xlog.XLog
 import info.dvkr.switchmovie.domain.utils.getLog
-import kotlinx.coroutines.*
-import kotlin.coroutines.CoroutineContext
+import kotlinx.coroutines.CoroutineExceptionHandler
 
-abstract class BaseActivity : AppCompatActivity(), CoroutineScope {
+abstract class BaseActivity : AppCompatActivity() {
 
-    private val supervisorJob = SupervisorJob()
-
-    override val coroutineContext: CoroutineContext =
-        supervisorJob + Dispatchers.Main + CoroutineExceptionHandler { _, throwable ->
-            XLog.e(getLog("onCoroutineException"), throwable)
-        }
+    protected val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
+        XLog.e(getLog("onCoroutineException"), throwable)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        XLog.d(getLog("onCreate", "Invoked"))
+        XLog.d(getLog("onCreate"))
     }
 
     override fun onDestroy() {
-        XLog.d(getLog("onDestroy", "Invoked"))
-        coroutineContext.cancelChildren()
+        XLog.d(getLog("onDestroy"))
         super.onDestroy()
     }
 }

@@ -12,11 +12,11 @@ import androidx.navigation.fragment.navArgs
 import coil.api.load
 import com.elvishew.xlog.XLog
 import info.dvkr.switchmovie.R
+import info.dvkr.switchmovie.databinding.FragmentMovieDetailBinding
 import info.dvkr.switchmovie.domain.utils.getLog
 import info.dvkr.switchmovie.viewmodel.BaseViewModel
 import info.dvkr.switchmovie.viewmodel.moviedetail.MovieDetailViewEvent
 import info.dvkr.switchmovie.viewmodel.moviedetail.MovieDetailViewModel
-import kotlinx.android.synthetic.main.fragment_movie_detail.*
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.text.ParseException
 import java.text.SimpleDateFormat
@@ -34,38 +34,42 @@ class MovieDetailFragment : Fragment() {
     private val colorAccent by lazy { ContextCompat.getColor(requireContext(), R.color.colorAccent) }
     private val colorWhite by lazy { ContextCompat.getColor(requireContext(), R.color.colorWhite) }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View =
-        inflater.inflate(R.layout.fragment_movie_detail, container, false)
+    private var _binding: FragmentMovieDetailBinding? = null
+    private val binding get() = _binding!!
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        _binding = FragmentMovieDetailBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        XLog.d(getLog("onViewCreated", "Invoked"))
+        XLog.d(getLog("onViewCreated"))
 
         viewModel.stateLiveData().observe(viewLifecycleOwner, androidx.lifecycle.Observer { state ->
             XLog.d(getLog("stateLiveData", state.toString()))
 
             requireActivity().title = state.movie.title
 
-            iv_fragment_movie_detail_image.load(state.movie.posterPath)
+            binding.ivFragmentMovieDetailImage.load(state.movie.posterPath)
 
-            tv_fragment_movie_detail_score.text = state.movie.voteAverage
-            tv_fragment_movie_detail_rating.text = state.movie.popularity.toString()
+            binding.tvFragmentMovieDetailScore.text = state.movie.voteAverage
+            binding.tvFragmentMovieDetailRating.text = state.movie.popularity.toString()
 
             try {
                 val date = dateParser.parse(state.movie.releaseDate)
-                tv_fragment_movie_detail_date.text = dateFormatter.format(date)
+                binding.tvFragmentMovieDetailDate.text = dateFormatter.format(date)
             } catch (ex: ParseException) {
-                tv_fragment_movie_detail_date.text = state.movie.releaseDate
+                binding.tvFragmentMovieDetailDate.text = state.movie.releaseDate
                 viewModel.onEvent(BaseViewModel.Error(ex))
             }
 
-            tv_fragment_movie_detail_title.text = state.movie.title
-            tv_fragment_movie_detail_overview.text = state.movie.overview
-            iv_fragment_movie_detail_start.imageTintList =
+            binding.tvFragmentMovieDetailTitle.text = state.movie.title
+            binding.tvFragmentMovieDetailOverview.text = state.movie.overview
+            binding.ivFragmentMovieDetailStart.imageTintList =
                 ColorStateList.valueOf(if (state.movie.isStar) colorAccent else colorWhite)
 
-
-            sr_fragment_movie_detail.isRefreshing = state.workInProgressCounter > 0
+            binding.srFragmentMovieDetail.isRefreshing = state.workInProgressCounter > 0
 
             if (error != state.error) {
                 state.error?.run {
@@ -79,6 +83,7 @@ class MovieDetailFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        _binding = null
         error = null
     }
 }

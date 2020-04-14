@@ -4,5 +4,5 @@ import info.dvkr.switchmovie.viewmodel.BaseViewModel
 
 
 sealed class MovieDetailViewEvent : BaseViewModel.Event {
-    data class GetMovieById(val movieId: Int) : MovieDetailViewEvent()
+    data class GetMovieById(val movieId: Long) : MovieDetailViewEvent()
 }

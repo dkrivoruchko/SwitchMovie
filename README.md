@@ -34,7 +34,7 @@ Application users some sort of State Machine in ViewModel to manage View states.
 * [Android Jetpack libraries](https://developer.android.com/jetpack/)
 * [Koin](https://github.com/Ekito/koin) (Yes, no Dagger 2 - see [version-one](https://github.com/dkrivoruchko/SwitchMovie/tree/version-one) branch for it)
 * [Retrofit 2](https://github.com/square/retrofit)
-* [Glide 4](https://github.com/bumptech/glide/tree/master)
+* [Coil](https://github.com/coil-kt/coil)
 * [Binary Preferences](https://github.com/iamironz/binaryprefs)
 * [xLog](https://github.com/elvishew/xLog)
 * [LeakCanary](https://github.com/square/leakcanary)

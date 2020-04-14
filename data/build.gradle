@@ -72,6 +72,5 @@ dependencies {
 
     implementation("com.github.iamironz:binaryprefs:$binaryprefs")
 
-    implementation("org.threeten:threetenbp:$threetenbp:no-tzdb")
     implementation("com.elvishew:xlog:$xlog")
 }

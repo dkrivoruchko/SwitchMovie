@@ -2,7 +2,7 @@ package info.dvkr.switchmovie.domain.model
 
 
 data class Movie(
-    val id: Int,
+    val id: Long,
     val posterPath: String,
     val title: String,
     val overview: String,

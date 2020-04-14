@@ -1,12 +1,14 @@
 package info.dvkr.switchmovie.data.repository.local
 
+import android.annotation.SuppressLint
 import com.elvishew.xlog.XLog
 import info.dvkr.switchmovie.domain.model.Movie
 import info.dvkr.switchmovie.domain.settings.Settings
 import info.dvkr.switchmovie.domain.utils.getLog
 import kotlinx.coroutines.flow.Flow
-import org.threeten.bp.LocalDate
+import java.time.LocalDate
 
+@SuppressLint("NewApi")
 class MovieLocalService(
     private val movieDao: MovieLocal.MovieDao,
     private val settings: Settings
@@ -17,12 +19,12 @@ class MovieLocalService(
         return movieDao.getAll()
     }
 
-    suspend fun getMovieById(movieId: Int): Movie? {
+    suspend fun getMovieById(movieId: Long): Movie? {
         XLog.d(getLog("getMovieById", "$movieId"))
         return movieDao.getMovieById(movieId)
     }
 
-    fun getMovieFlowById(movieId: Int): Flow<Movie> {
+    fun getMovieFlowById(movieId: Long): Flow<Movie> {
         XLog.d(getLog("getMovieFlowById", "$movieId"))
         return movieDao.getMovieFlowById(movieId)
     }

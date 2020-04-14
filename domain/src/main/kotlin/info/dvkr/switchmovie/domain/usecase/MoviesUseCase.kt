@@ -1,13 +1,15 @@
 package info.dvkr.switchmovie.domain.usecase
 
+import android.annotation.SuppressLint
 import info.dvkr.switchmovie.domain.model.Movie
 import info.dvkr.switchmovie.domain.repositories.MovieRepository
 import info.dvkr.switchmovie.domain.utils.Either
 import info.dvkr.switchmovie.domain.utils.map
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
-import org.threeten.bp.LocalDate
+import java.time.LocalDate
 
+@SuppressLint("NewApi")
 class MoviesUseCase(
     private val useCaseScope: CoroutineScope,
     private val movieRepository: MovieRepository.RW
@@ -18,7 +20,7 @@ class MoviesUseCase(
         movieRepository.getMovies()
     }
 
-    suspend fun getMovieFlowById(movieId: Int): Flow<Movie> = withContext(useCaseScope.coroutineContext) {
+    suspend fun getMovieFlowById(movieId: Long): Flow<Movie> = withContext(useCaseScope.coroutineContext) {
 //        throw IllegalStateException("getMovieFlowById error")
         movieRepository.getMovieFlowById(movieId)
     }
@@ -49,14 +51,14 @@ class MoviesUseCase(
         }
     }.join()
 
-    suspend fun setMovieStar(movieId: Int) = useCaseScope.launch {
+    suspend fun setMovieStar(movieId: Long) = useCaseScope.launch {
         val movie = movieRepository.getMovieById(movieId)
         delay(10000)
         require(movie != null) { "MoviesUseCase.setMovieStar: Movie (id:${movieId}) not found" }
         movieRepository.updateMovie(movie.copy(isStar = true))
     }.join()
 
-    suspend fun unsetMovieStar(movieId: Int) = useCaseScope.launch {
+    suspend fun unsetMovieStar(movieId: Long) = useCaseScope.launch {
         val movie = movieRepository.getMovieById(movieId)
         require(movie != null) { "MoviesUseCase.unsetMovieStar: Movie (id:${movieId}) not found" }
         movieRepository.updateMovie(movie.copy(isStar = false))

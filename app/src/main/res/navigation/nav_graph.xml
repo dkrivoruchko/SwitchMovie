@@ -24,7 +24,7 @@
         tools:layout="@layout/fragment_movie_detail">
         <argument
             android:name="movieId"
-            android:defaultValue="-1"
-            app:argType="integer" />
+            android:defaultValue="-1L"
+            app:argType="long" />
     </fragment>
 </navigation>

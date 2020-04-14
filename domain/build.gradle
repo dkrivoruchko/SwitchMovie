@@ -47,6 +47,5 @@ dependencies {
 
     implementation("androidx.lifecycle:lifecycle-livedata-core:$androidxLifecycle")
 
-    implementation("org.threeten:threetenbp:$threetenbp:no-tzdb")
     implementation("com.elvishew:xlog:$xlog")
 }

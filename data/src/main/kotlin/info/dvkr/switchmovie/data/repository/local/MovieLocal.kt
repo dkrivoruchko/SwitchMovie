@@ -8,7 +8,7 @@ object MovieLocal {
 
     @Entity(tableName = "movie_table")
     data class MovieDb(
-        @PrimaryKey(autoGenerate = false) @ColumnInfo(name = "id") val id: Int = 0,
+        @PrimaryKey(autoGenerate = false) @ColumnInfo(name = "id") val id: Long = 0,
         @ColumnInfo(name = "posterPath") val posterPath: String = "",
         @ColumnInfo(name = "title") val title: String = "",
         @ColumnInfo(name = "overview") val overview: String = "",
@@ -39,10 +39,10 @@ object MovieLocal {
     @Dao
     interface MovieDao {
         @Query("SELECT * FROM movie_table where id = :movieId")
-        suspend fun getMovieById(movieId: Int): Movie?
+        suspend fun getMovieById(movieId: Long): Movie?
 
         @Query("SELECT * FROM movie_table where id = :movieId")
-        fun getMovieFlowById(movieId: Int): Flow<Movie>
+        fun getMovieFlowById(movieId: Long): Flow<Movie>
 
         @Query("SELECT * FROM movie_table ORDER BY popularity DESC")
         fun getAll(): Flow<List<Movie>>

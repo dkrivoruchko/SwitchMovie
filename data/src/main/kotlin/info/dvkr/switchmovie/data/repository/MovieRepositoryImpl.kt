@@ -1,13 +1,15 @@
 package info.dvkr.switchmovie.data.repository
 
+import android.annotation.SuppressLint
 import info.dvkr.switchmovie.data.repository.api.MovieApiService
 import info.dvkr.switchmovie.data.repository.local.MovieLocalService
 import info.dvkr.switchmovie.domain.model.Movie
 import info.dvkr.switchmovie.domain.repositories.MovieRepository
 import info.dvkr.switchmovie.domain.utils.Either
 import kotlinx.coroutines.flow.Flow
-import org.threeten.bp.LocalDate
+import java.time.LocalDate
 
+@SuppressLint("NewApi")
 class MovieRepositoryImpl(
     private val movieApiService: MovieApiService,
     private val movieLocalService: MovieLocalService
@@ -17,10 +19,10 @@ class MovieRepositoryImpl(
 
     override fun getMovies(): Flow<List<Movie>> = movieLocalService.getMovies()
 
-    override suspend fun getMovieById(movieId: Int): Movie? =
+    override suspend fun getMovieById(movieId: Long): Movie? =
         movieLocalService.getMovieById(movieId)
 
-    override fun getMovieFlowById(movieId: Int): Flow<Movie> =
+    override fun getMovieFlowById(movieId: Long): Flow<Movie> =
         movieLocalService.getMovieFlowById(movieId)
 
     override fun getLastMovieUpdateDate(): LocalDate = movieLocalService.getLastMovieUpdateDate()
