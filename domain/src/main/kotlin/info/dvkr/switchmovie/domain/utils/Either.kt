@@ -39,6 +39,14 @@ sealed class Either<out F : Throwable, out S> {
         }
     }
 
+    suspend inline fun onSuccessSuspend(crossinline fnS: suspend (S) -> Any): Either<F, S> = when (this) {
+        is Failure -> this
+        is Success -> {
+            fnS(value)
+            this
+        }
+    }
+
     inline fun onFailure(fnF: (F) -> Any): Either<F, S> = when (this) {
         is Failure -> {
             fnF(exception)

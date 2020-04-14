@@ -1,6 +1,6 @@
-package info.dvkr.switchmovie.data.viewmodel.moviedetail
+package info.dvkr.switchmovie.viewmodel.moviedetail
 
-import info.dvkr.switchmovie.data.viewmodel.BaseViewModel
+import info.dvkr.switchmovie.viewmodel.BaseViewModel
 
 
 sealed class MovieDetailViewEvent : BaseViewModel.Event {

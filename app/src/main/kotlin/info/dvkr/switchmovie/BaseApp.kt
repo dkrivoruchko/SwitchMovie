@@ -29,11 +29,11 @@ abstract class BaseApp : Application() {
 
         initLogger()
 
-        val defaultHandler = Thread.getDefaultUncaughtExceptionHandler()
-        Thread.setDefaultUncaughtExceptionHandler { thread: Thread, throwable: Throwable ->
-            XLog.e("Uncaught throwable in thread ${thread.name}", throwable)
-            defaultHandler?.uncaughtException(thread, throwable)
-        }
+//        val defaultHandler = Thread.getDefaultUncaughtExceptionHandler()
+//        Thread.setDefaultUncaughtExceptionHandler { thread: Thread, throwable: Throwable ->
+//            XLog.e("Uncaught throwable in thread ${thread.name}", throwable)
+//            defaultHandler?.uncaughtException(thread, throwable)
+//        }
 
         GlobalScope.launch { AndroidThreeTen.init(this@BaseApp) }
     }

@@ -10,21 +10,21 @@ class MovieGridApp : BaseApp() {
     override fun initLogger() {
         System.setProperty("kotlinx.coroutines.debug", "on")
 
-        StrictMode.setThreadPolicy(
-            StrictMode.ThreadPolicy.Builder()
-                .detectAll()
-                .permitDiskReads()
-                .permitDiskWrites()
-                .penaltyLog()
-                .build()
-        )
-
-        StrictMode.setVmPolicy(
-            StrictMode.VmPolicy.Builder()
-                .detectAll()
-                .penaltyLog()
-                .build()
-        )
+//        StrictMode.setThreadPolicy(
+//            StrictMode.ThreadPolicy.Builder()
+//                .detectAll()
+//                .permitDiskReads()
+//                .permitDiskWrites()
+//                .penaltyLog()
+//                .build()
+//        )
+//
+//        StrictMode.setVmPolicy(
+//            StrictMode.VmPolicy.Builder()
+//                .detectAll()
+//                .penaltyLog()
+//                .build()
+//        )
 
         val logConfiguration = LogConfiguration.Builder().tag("SSApp").build()
         XLog.init(logConfiguration, AndroidPrinter())

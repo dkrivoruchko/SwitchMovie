@@ -1,6 +1,6 @@
-package info.dvkr.switchmovie.data.viewmodel.moviegrid
+package info.dvkr.switchmovie.viewmodel.moviegrid
 
-import info.dvkr.switchmovie.data.viewmodel.BaseViewModel
+import info.dvkr.switchmovie.viewmodel.BaseViewModel
 
 sealed class MovieGridViewEvent : BaseViewModel.Event {
     object Refresh : MovieGridViewEvent()

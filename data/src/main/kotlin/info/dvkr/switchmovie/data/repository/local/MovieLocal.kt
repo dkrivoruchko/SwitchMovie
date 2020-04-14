@@ -1,8 +1,8 @@
 package info.dvkr.switchmovie.data.repository.local
 
-import androidx.lifecycle.LiveData
 import androidx.room.*
 import info.dvkr.switchmovie.domain.model.Movie
+import kotlinx.coroutines.flow.Flow
 
 object MovieLocal {
 
@@ -21,11 +21,19 @@ object MovieLocal {
     object MovieConverter {
         @TypeConverter
         fun fromMovieToMovieDb(movie: Movie): MovieDb =
-            movie.run { MovieDb(id, posterPath, title, overview, releaseDate, voteAverage, popularity, isStar) }
+            movie.run {
+                MovieDb(
+                    id, posterPath, title, overview, releaseDate, voteAverage, popularity, isStar
+                )
+            }
 
         @TypeConverter
         fun fromMovieDbToMovie(movieDb: MovieDb): Movie =
-            movieDb.run { Movie(id, posterPath, title, overview, releaseDate, voteAverage, popularity, isStar) }
+            movieDb.run {
+                Movie(
+                    id, posterPath, title, overview, releaseDate, voteAverage, popularity, isStar
+                )
+            }
     }
 
     @Dao
@@ -34,10 +42,10 @@ object MovieLocal {
         suspend fun getMovieById(movieId: Int): Movie?
 
         @Query("SELECT * FROM movie_table where id = :movieId")
-        fun getMovieByIdLiveData(movieId: Int): LiveData<Movie>
+        fun getMovieFlowById(movieId: Int): Flow<Movie>
 
         @Query("SELECT * FROM movie_table ORDER BY popularity DESC")
-        fun getAll(): LiveData<List<Movie>>
+        fun getAll(): Flow<List<Movie>>
 
         @Insert(onConflict = OnConflictStrategy.REPLACE)
         suspend fun insert(movie: MovieDb)

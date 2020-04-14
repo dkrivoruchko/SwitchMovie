@@ -8,16 +8,14 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.LiveData
 import androidx.navigation.fragment.navArgs
 import coil.api.load
 import com.elvishew.xlog.XLog
 import info.dvkr.switchmovie.R
-import info.dvkr.switchmovie.data.viewmodel.BaseViewModel
-import info.dvkr.switchmovie.data.viewmodel.moviedetail.MovieDetailViewEvent
-import info.dvkr.switchmovie.data.viewmodel.moviedetail.MovieDetailViewModel
-import info.dvkr.switchmovie.domain.model.Movie
 import info.dvkr.switchmovie.domain.utils.getLog
+import info.dvkr.switchmovie.viewmodel.BaseViewModel
+import info.dvkr.switchmovie.viewmodel.moviedetail.MovieDetailViewEvent
+import info.dvkr.switchmovie.viewmodel.moviedetail.MovieDetailViewModel
 import kotlinx.android.synthetic.main.fragment_movie_detail.*
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.text.ParseException
@@ -28,7 +26,6 @@ class MovieDetailFragment : Fragment() {
 
     private val args: MovieDetailFragmentArgs by navArgs()
     private val viewModel by viewModel<MovieDetailViewModel>()
-    private var movieLiveData: LiveData<Movie>? = null
     private var error: Throwable? = null
 
     private val dateParser = SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH)
@@ -45,41 +42,33 @@ class MovieDetailFragment : Fragment() {
         XLog.d(getLog("onViewCreated", "Invoked"))
 
         viewModel.stateLiveData().observe(viewLifecycleOwner, androidx.lifecycle.Observer { state ->
-            val movieDetailState = state as? MovieDetailViewModel.MovieDetailSate ?: return@Observer
-            XLog.d(getLog("stateLiveData", movieDetailState.toString()))
+            XLog.d(getLog("stateLiveData", state.toString()))
 
-            movieLiveData?.removeObservers(viewLifecycleOwner)
-            movieLiveData = movieDetailState.movieLiveData
+            requireActivity().title = state.movie.title
 
-            movieLiveData?.observe(viewLifecycleOwner, androidx.lifecycle.Observer MovieObserver@{ movie ->
-                XLog.d(getLog("movieLiveData", movie.toString()))
+            iv_fragment_movie_detail_image.load(state.movie.posterPath)
 
-                movie != null || return@MovieObserver
-                requireActivity().title = movie.title
+            tv_fragment_movie_detail_score.text = state.movie.voteAverage
+            tv_fragment_movie_detail_rating.text = state.movie.popularity.toString()
 
-                iv_fragment_movie_detail_image.load(movie.posterPath)
+            try {
+                val date = dateParser.parse(state.movie.releaseDate)
+                tv_fragment_movie_detail_date.text = dateFormatter.format(date)
+            } catch (ex: ParseException) {
+                tv_fragment_movie_detail_date.text = state.movie.releaseDate
+                viewModel.onEvent(BaseViewModel.Error(ex))
+            }
 
-                tv_fragment_movie_detail_score.text = movie.voteAverage
-                tv_fragment_movie_detail_rating.text = movie.popularity.toString()
+            tv_fragment_movie_detail_title.text = state.movie.title
+            tv_fragment_movie_detail_overview.text = state.movie.overview
+            iv_fragment_movie_detail_start.imageTintList =
+                ColorStateList.valueOf(if (state.movie.isStar) colorAccent else colorWhite)
 
-                try {
-                    val date = dateParser.parse(movie.releaseDate)
-                    tv_fragment_movie_detail_date.text = dateFormatter.format(date)
-                } catch (ex: ParseException) {
-                    tv_fragment_movie_detail_date.text = movie.releaseDate
-                    viewModel.onEvent(BaseViewModel.Error(ex))
-                }
 
-                tv_fragment_movie_detail_title.text = movie.title
-                tv_fragment_movie_detail_overview.text = movie.overview
-                iv_fragment_movie_detail_start.imageTintList =
-                    ColorStateList.valueOf(if (movie.isStar) colorAccent else colorWhite)
-            })
+            sr_fragment_movie_detail.isRefreshing = state.workInProgressCounter > 0
 
-            sr_fragment_movie_detail.isRefreshing = movieDetailState.workInProgressCounter > 0
-
-            if (error != movieDetailState.error) {
-                movieDetailState.error?.run {
+            if (error != state.error) {
+                state.error?.run {
                     Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
                 }
             }
@@ -90,7 +79,6 @@ class MovieDetailFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        movieLiveData = null
         error = null
     }
 }

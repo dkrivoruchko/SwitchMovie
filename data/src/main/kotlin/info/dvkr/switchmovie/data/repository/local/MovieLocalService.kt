@@ -1,10 +1,10 @@
 package info.dvkr.switchmovie.data.repository.local
 
-import androidx.lifecycle.LiveData
 import com.elvishew.xlog.XLog
 import info.dvkr.switchmovie.domain.model.Movie
 import info.dvkr.switchmovie.domain.settings.Settings
 import info.dvkr.switchmovie.domain.utils.getLog
+import kotlinx.coroutines.flow.Flow
 import org.threeten.bp.LocalDate
 
 class MovieLocalService(
@@ -12,8 +12,8 @@ class MovieLocalService(
     private val settings: Settings
 ) {
 
-    fun getMovies(): LiveData<List<Movie>> {
-        XLog.d(getLog("getMovies", "Invoked"))
+    fun getMovies(): Flow<List<Movie>> {
+        XLog.d(getLog("getMovies"))
         return movieDao.getAll()
     }
 
@@ -22,13 +22,13 @@ class MovieLocalService(
         return movieDao.getMovieById(movieId)
     }
 
-    fun getMovieByIdLiveData(movieId: Int): LiveData<Movie> {
-        XLog.d(getLog("getMovieByIdLiveData", "$movieId"))
-        return movieDao.getMovieByIdLiveData(movieId)
+    fun getMovieFlowById(movieId: Int): Flow<Movie> {
+        XLog.d(getLog("getMovieFlowById", "$movieId"))
+        return movieDao.getMovieFlowById(movieId)
     }
 
     fun getLastMovieUpdateDate(): LocalDate {
-        XLog.d(getLog("getLastMovieUpdateDate", "Invoked"))
+        XLog.d(getLog("getLastMovieUpdateDate"))
         return LocalDate.ofEpochDay(settings.lastMovieUpdateDate)
     }
 
@@ -43,7 +43,7 @@ class MovieLocalService(
     }
 
     suspend fun deleteAll() {
-        XLog.d(getLog("deleteAll", "Invoked"))
+        XLog.d(getLog("deleteAll"))
         movieDao.deleteAll()
     }
 

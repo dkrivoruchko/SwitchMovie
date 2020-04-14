@@ -12,4 +12,8 @@ data class Movie(
     val isStar: Boolean
 ) {
     override fun toString() = "Movie(id=$id)"
+
+    companion object {
+        val EMPTY = Movie(-1, "", "", "", "", "", 0f, false)
+    }
 }

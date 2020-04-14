@@ -9,16 +9,15 @@ import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.Transformations
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.*
 import coil.api.load
 import com.elvishew.xlog.XLog
 import info.dvkr.switchmovie.R
-import info.dvkr.switchmovie.data.viewmodel.moviegrid.MovieGridViewEvent
-import info.dvkr.switchmovie.data.viewmodel.moviegrid.MovieGridViewModel
 import info.dvkr.switchmovie.domain.model.Movie
 import info.dvkr.switchmovie.domain.utils.getLog
+import info.dvkr.switchmovie.viewmodel.moviegrid.MovieGridViewEvent
+import info.dvkr.switchmovie.viewmodel.moviegrid.MovieGridViewModel
 import kotlinx.android.extensions.LayoutContainer
 import kotlinx.android.synthetic.main.fragment_movie_grid.*
 import kotlinx.android.synthetic.main.item_movie.*
@@ -33,7 +32,6 @@ class MovieGridFragment : Fragment() {
     private val viewModel by viewModel<MovieGridViewModel>()
     private var movieAdapter: MovieAdapter? = null
     private var moviesLiveData: LiveData<List<Movie>>? = null
-    private var movieGridViewItemLiveData: LiveData<List<MovieGridViewItem>>? = null
     private var error: Throwable? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View =
@@ -65,58 +63,10 @@ class MovieGridFragment : Fragment() {
             })
         }
 
-        viewModel.stateLiveData().observe(viewLifecycleOwner, androidx.lifecycle.Observer { state ->
-            val movieGridState = state as? MovieGridViewModel.MovieGridState ?: return@Observer
+        viewModel.stateLiveData().observe(viewLifecycleOwner, androidx.lifecycle.Observer { movieGridState ->
             XLog.d(getLog("stateLiveData", movieGridState.toString()))
 
-            if (moviesLiveData != movieGridState.moviesLiveData) {
-                moviesLiveData = movieGridState.moviesLiveData
-
-                movieGridViewItemLiveData?.removeObservers(viewLifecycleOwner)
-                movieGridViewItemLiveData = Transformations.map(movieGridState.moviesLiveData) { list ->
-                    list.map { MovieGridViewItem(it.id, it.posterPath, it.isStar) }
-                }
-                movieGridViewItemLiveData?.observe(viewLifecycleOwner, androidx.lifecycle.Observer {
-                    XLog.d(getLog("getMovieGridModelLiveData.submitList", it.toString()))
-                    movieAdapter?.submitList(it)
-                })
-            }
-
-//            val invertMovieStarById = movieGridState.invertMovieStarByIdJob?.first
-//            if (invertMovieStarById != null) {
-//                if (invertMovieStarById != currentInvertMovieStarById?.first) {
-            // New movie to invertMovieStarById
-//                    currentInvertMovieStarById?.second?.let { if (it.isShownOrQueued) it.dismiss() }
-
-//                    val snackbar = SnackbarBuilder(this@MovieGridActivity)
-//                        .message("Star/unstar movie (id: $invertMovieStarById)")
-//                        .actionText("Cancel")
-//                        .duration(Snackbar.LENGTH_INDEFINITE)
-//                        .dismissCallback { _, dismissEvent ->
-//                            when (dismissEvent) {
-//                                Snackbar.Callback.DISMISS_EVENT_ACTION -> {
-//                                    Timber.e("DISMISS_EVENT_ACTION")
-//                                    viewModel.onViewEvent(
-//                                        MovieGridViewEvent.ViewCancelInvertMovieStarById(invertMovieStarById)
-//                                    )
-//                                }
-//                                Snackbar.Callback.DISMISS_EVENT_SWIPE -> Timber.e("DISMISS_EVENT_SWIPE")
-//                                Snackbar.Callback.DISMISS_EVENT_TIMEOUT -> Timber.e("DISMISS_EVENT_TIMEOUT")
-//                                Snackbar.Callback.DISMISS_EVENT_MANUAL -> Timber.e("DISMISS_EVENT_MANUAL")
-//                                Snackbar.Callback.DISMISS_EVENT_CONSECUTIVE -> Timber.e("DISMISS_EVENT_CONSECUTIVE")
-//                            }
-//                        }
-//                        .build()
-
-//                    currentInvertMovieStarById = Pair(invertMovieStarById, snackbar)
-//                    snackbar.show()
-//                }
-//            } else {
-//                if (currentInvertMovieStarById != null) {
-//                    currentInvertMovieStarById?.second?.let { if (it.isShownOrQueued) it.dismiss() }
-//                    currentInvertMovieStarById = null
-//                }
-//            }
+            movieAdapter?.submitList(movieGridState.movies.map { MovieGridViewItem(it.id, it.posterPath, it.isStar) })
 
             sr_fragment_movie_grid.isRefreshing = movieGridState.workInProgressCounter > 0
 

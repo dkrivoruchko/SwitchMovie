@@ -3,17 +3,18 @@ package info.dvkr.switchmovie.domain.repositories
 import androidx.lifecycle.LiveData
 import info.dvkr.switchmovie.domain.model.Movie
 import info.dvkr.switchmovie.domain.utils.Either
+import kotlinx.coroutines.flow.Flow
 import org.threeten.bp.LocalDate
 
 
 interface MovieRepository {
     interface RO {
 
-        fun getMovies(): LiveData<List<Movie>>
+        fun getMovies(): Flow<List<Movie>>
 
         suspend fun getMovieById(movieId: Int): Movie?
 
-        fun getMovieByIdLiveData(movieId: Int): LiveData<Movie>
+        fun getMovieFlowById(movieId: Int): Flow<Movie>
 
         fun getLastMovieUpdateDate(): LocalDate
     }

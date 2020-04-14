@@ -2,7 +2,6 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
-apply plugin: 'com.getkeepsafe.dexcount'
 apply plugin: 'androidx.navigation.safeargs.kotlin'
 
 
@@ -39,8 +38,9 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = '1.8'
-        targetCompatibility = '1.8'
+        coreLibraryDesugaringEnabled = true
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
     }
 
     kotlinOptions {
@@ -63,10 +63,11 @@ android {
 androidExtensions { experimental = true }
 
 dependencies {
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:1.0.5")
+
     implementation project(':domain')
     implementation project(':data')
 
-    implementation("org.jetbrains:annotations:$jetbrainsAnnotations")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutineVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutineVersion")
@@ -80,7 +81,7 @@ dependencies {
     implementation("androidx.navigation:navigation-fragment-ktx:${androidxNavigation}")
     implementation("androidx.navigation:navigation-ui:$androidxNavigation")
 
-    implementation('io.coil-kt:coil:0.6.1')
+    implementation('io.coil-kt:coil:0.9.5')
 
     implementation("androidx.room:room-runtime:$androidxRroom")
     kapt("androidx.room:room-compiler:$androidxRroom")

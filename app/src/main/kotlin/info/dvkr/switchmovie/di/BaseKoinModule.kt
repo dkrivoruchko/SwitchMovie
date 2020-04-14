@@ -9,12 +9,11 @@ import info.dvkr.switchmovie.data.repository.MovieRepositoryImpl
 import info.dvkr.switchmovie.data.repository.local.MovieLocal
 import info.dvkr.switchmovie.data.repository.local.MovieLocalService
 import info.dvkr.switchmovie.data.settings.SettingsImpl
-import info.dvkr.switchmovie.data.viewmodel.moviedetail.MovieDetailViewModel
-import info.dvkr.switchmovie.data.viewmodel.moviegrid.MovieGridViewModel
 import info.dvkr.switchmovie.domain.repositories.MovieRepository
 import info.dvkr.switchmovie.domain.settings.Settings
 import info.dvkr.switchmovie.domain.usecase.MoviesUseCase
-import info.dvkr.switchmovie.domain.utils.getLog
+import info.dvkr.switchmovie.viewmodel.moviedetail.MovieDetailViewModel
+import info.dvkr.switchmovie.viewmodel.moviegrid.MovieGridViewModel
 import kotlinx.coroutines.*
 import org.koin.android.ext.koin.androidApplication
 import org.koin.androidx.viewmodel.dsl.viewModel
@@ -42,29 +41,29 @@ val baseKoinModule = module {
         Room.databaseBuilder(androidApplication(), AppDatabase::class.java, "SwitchMovieDB").build()
     }
 
-    single(named("ViewModelCoroutineDispatcher")) { newSingleThreadContext("ViewModelContext") }
+//    single {
+//        CoroutineExceptionHandler { _, throwable ->
+//            XLog.e(getLog("onCoroutineException"), throwable)
+//        }
+//    }
 
-    factory { SupervisorJob() }
+    single(named("ViewModelThread")) { newSingleThreadContext("ViewModel") }
 
     factory(named("ViewModelScope")) {
-        CoroutineScope(get<CompletableJob>() +
-                get<ExecutorCoroutineDispatcher>(named("ViewModelCoroutineDispatcher")) +
-                CoroutineExceptionHandler { _, throwable -> XLog.e(getLog("onCoroutineException"), throwable) }
-        )
+        CoroutineScope(SupervisorJob() + get<ExecutorCoroutineDispatcher>(named("ViewModelThread")))
     }
 
-    factory(named("UseCaseScope")) {
-        CoroutineScope(get<CompletableJob>() +
-                Dispatchers.Default +
-                CoroutineExceptionHandler { _, throwable -> XLog.e(getLog("onCoroutineException"), throwable) }
-        )
-    }
+    factory(named("UseCaseScope")) { CoroutineScope(SupervisorJob() + Dispatchers.Default) }
+
+
 
     single { MovieLocalService(get<AppDatabase>().movieDao(), get()) }
 
     single<MovieRepository.RW> { MovieRepositoryImpl(get(), get()) } bind MovieRepository.RO::class
 
     single { MoviesUseCase(get(named("UseCaseScope")), get()) }
+
+
 
     viewModel { MovieGridViewModel(get(named("ViewModelScope")), get()) }
     viewModel { MovieDetailViewModel(get(named("ViewModelScope")), get()) }

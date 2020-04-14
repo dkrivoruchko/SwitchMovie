@@ -1,87 +1,64 @@
 package info.dvkr.switchmovie.domain.usecase
 
-import androidx.lifecycle.LiveData
-import com.elvishew.xlog.XLog
 import info.dvkr.switchmovie.domain.model.Movie
 import info.dvkr.switchmovie.domain.repositories.MovieRepository
-import info.dvkr.switchmovie.domain.usecase.base.BaseUseCase
-import info.dvkr.switchmovie.domain.utils.getLog
+import info.dvkr.switchmovie.domain.utils.Either
 import info.dvkr.switchmovie.domain.utils.map
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.async
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.Flow
 import org.threeten.bp.LocalDate
 
 class MoviesUseCase(
-    useCaseScope: CoroutineScope,
+    private val useCaseScope: CoroutineScope,
     private val movieRepository: MovieRepository.RW
-) : BaseUseCase(useCaseScope) {
+) {
 
-    sealed class Request<R> : BaseUseCase.Request<R>() {
-        class GetMoviesLiveData : Request<LiveData<List<Movie>>>()
-        data class GetMovieByIdLiveData(val movieId: Int) : Request<LiveData<Movie>>()
-        class ClearMovies : Request<Unit>()
-        class UpdateMovies : Request<Unit>()
-        class LoadMoreMovies : Request<Unit>()
-        data class SetMovieStar(val movieId: Int) : Request<Unit>()
-        data class UnsetMovieStar(val movieId: Int) : Request<Unit>()
-
-        override fun toString(): String = this::class.java.simpleName
-    }
-
-    override suspend fun requestHandler(request: BaseUseCase.Request<*>) {
-        XLog.d(getLog("requestHandler", "$request"))
-
-        when (request) {
-            is Request.GetMoviesLiveData -> getMoviesLiveData(request)
-            is Request.GetMovieByIdLiveData -> getMovieByIdLiveData(request)
-            is Request.ClearMovies -> clearMovies(request)
-            is Request.UpdateMovies -> updateMovies(request)
-            is Request.LoadMoreMovies -> loadMoreMoviesAsync(request)
-            is Request.SetMovieStar -> setMovieStar(request)
-            is Request.UnsetMovieStar -> unsetMovieStar(request)
-        }
-    }
-
-    private suspend fun getMoviesLiveData(request: Request.GetMoviesLiveData) = request.sendResponse {
+    suspend fun getMoviesFlow(): Flow<List<Movie>> = withContext(useCaseScope.coroutineContext) {
+//        throw IllegalStateException("getMoviesFlow error")
         movieRepository.getMovies()
     }
 
-    private suspend fun getMovieByIdLiveData(request: Request.GetMovieByIdLiveData) = request.sendResponse {
-        movieRepository.getMovieByIdLiveData(request.movieId)
+    suspend fun getMovieFlowById(movieId: Int): Flow<Movie> = withContext(useCaseScope.coroutineContext) {
+//        throw IllegalStateException("getMovieFlowById error")
+        movieRepository.getMovieFlowById(movieId)
     }
 
-    private suspend fun clearMovies(request: Request.ClearMovies) = request.sendResponse {
+    suspend fun clearMovies() = useCaseScope.launch {
         movieRepository.deleteMovies()
         movieRepository.clearLoadState()
-    }
+    }.join()
 
-    private suspend fun updateMovies(request: Request.UpdateMovies) = request.sendResponse {
+    suspend fun loadMoreMovies(): Either<Throwable, Unit> = useCaseScope.async {
+        // Exceptions are exposed when calling await, they will be
+        // propagated in the coroutine that called doWork. Watch
+        // out! They will be ignored if the calling context cancels.
+//        throw IllegalStateException("loadMoreMovies error")
+        movieRepository.loadMoreMovies().map { movieRepository.addMovies(it) }
+    }.await()
+
+    suspend fun clearOldMovies() = useCaseScope.launch {
+        // if this can throw an exception, wrap inside try/catch
+        // or rely on a CoroutineExceptionHandler installed
+        // in the externalScope's CoroutineScope
+//        throw IllegalStateException("updateMovies error")
         val lastMovieUpdateDate = movieRepository.getLastMovieUpdateDate()
         if (lastMovieUpdateDate.plusDays(1).isBefore(LocalDate.now())) {
             movieRepository.deleteMovies()
             movieRepository.clearLoadState()
             movieRepository.setLastMovieUpdateDate(LocalDate.now())
-        } else {
-            throw IllegalStateException("Movies already updated")
         }
-    }
+    }.join()
 
-    private suspend fun loadMoreMoviesAsync(request: Request.LoadMoreMovies) = async {
-        request.sendResponse {
-            movieRepository.loadMoreMovies()
-                .map { movieRepository.addMovies(it) }
-        }
-    }
-
-    private suspend fun setMovieStar(request: Request.SetMovieStar) = request.sendResponse {
-        val movie = movieRepository.getMovieById(request.movieId)
-        require(movie != null) { "MoviesUseCase.setMovieStar: Movie (id:${request.movieId}) not found" }
+    suspend fun setMovieStar(movieId: Int) = useCaseScope.launch {
+        val movie = movieRepository.getMovieById(movieId)
+        delay(10000)
+        require(movie != null) { "MoviesUseCase.setMovieStar: Movie (id:${movieId}) not found" }
         movieRepository.updateMovie(movie.copy(isStar = true))
-    }
+    }.join()
 
-    private suspend fun unsetMovieStar(request: Request.UnsetMovieStar) = request.sendResponse {
-        val movie = movieRepository.getMovieById(request.movieId)
-        require(movie != null) { "MoviesUseCase.unsetMovieStar: Movie (id:${request.movieId}) not found" }
+    suspend fun unsetMovieStar(movieId: Int) = useCaseScope.launch {
+        val movie = movieRepository.getMovieById(movieId)
+        require(movie != null) { "MoviesUseCase.unsetMovieStar: Movie (id:${movieId}) not found" }
         movieRepository.updateMovie(movie.copy(isStar = false))
-    }
+    }.join()
 }
