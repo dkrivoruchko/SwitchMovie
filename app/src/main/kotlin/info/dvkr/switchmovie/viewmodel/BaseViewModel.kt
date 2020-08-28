@@ -2,39 +2,57 @@ package info.dvkr.switchmovie.viewmodel
 
 import androidx.annotation.AnyThread
 import androidx.annotation.CallSuper
-import androidx.lifecycle.ViewModel
+import androidx.annotation.MainThread
+import androidx.lifecycle.*
 import com.elvishew.xlog.XLog
 import info.dvkr.switchmovie.domain.utils.getLog
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.channels.actor
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.coroutines.launch
 
 
-abstract class BaseViewModel(protected val viewModelScope: CoroutineScope) : ViewModel() {
+abstract class BaseViewModel<T> : ViewModel() {
 
     interface Event
 
     data class Error(val throwable: Throwable) : Event
 
-    protected abstract suspend fun onEach(event: Event)
+    @MainThread
     protected abstract fun onError(throwable: Throwable)
+
+    @MainThread
+    protected abstract suspend fun onEach(event: Event)
 
     protected val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
         XLog.e(getLog("onCoroutineException"), throwable)
         onError(throwable)
     }
 
-    private val eventsChannel by lazy {
-        viewModelScope.actor<Event>(capacity = 16) {
-            for (event in this) {
+    protected val stateLiveData = MutableLiveData<T>()
+
+    fun getStateLiveData(): LiveData<T> = Transformations.distinctUntilChanged(stateLiveData)
+
+    private val viewModelEventChannel: Channel<Event> = Channel(Channel.UNLIMITED)
+
+    init {
+        XLog.d(getLog("init"))
+
+        viewModelScope.launch {
+            viewModelEventChannel.consumeAsFlow().collect { event ->
+                ensureActive()
                 try {
-                    if (event is Error) onError(event.throwable) else onEach(event)
-                } catch (ignore: CancellationException) {
-                    XLog.w(this@BaseViewModel.getLog("actor.ignore"), ignore)
+                    when (event) {
+                        is Error -> onError(event.throwable)
+                        else -> onEach(event)
+                    }
+                } catch (exception: CancellationException) {
+                    throw exception
                 } catch (th: Throwable) {
-                    XLog.e(this@BaseViewModel.getLog("actor"), th)
+                    XLog.e(this@BaseViewModel.getLog("collect"), th)
                     onError(th)
                 }
             }
@@ -44,21 +62,23 @@ abstract class BaseViewModel(protected val viewModelScope: CoroutineScope) : Vie
     @AnyThread
     fun onEvent(event: Event) {
         XLog.d(getLog("onEvent", "$event"))
+        if (viewModelEventChannel.isClosedForSend) {
+            XLog.w(getLog("onEvent", "isClosedForSend"))
+            return
+        }
+
         try {
-            eventsChannel.isClosedForSend.not() || throw IllegalStateException("ChannelIsClosed")
-            eventsChannel.offer(event) || throw IllegalStateException("ChannelIsFull")
-        } catch (ignore: CancellationException) {
-            XLog.e(getLog("onEvent.ignore", "CancellationException"))// Possible?
+            viewModelEventChannel.offer(event)
         } catch (th: Throwable) {
             XLog.e(getLog("onEvent"), th)
         }
     }
 
-
     @CallSuper
     override fun onCleared() {
         XLog.d(getLog("onCleared"))
-        viewModelScope.cancel(CancellationException(getLog("onCleared")))
+        viewModelEventChannel.close()
         super.onCleared()
     }
+
 }

@@ -1,6 +1,5 @@
 package info.dvkr.switchmovie
 
-import android.os.StrictMode
 import com.elvishew.xlog.LogConfiguration
 import com.elvishew.xlog.XLog
 import com.elvishew.xlog.printer.AndroidPrinter

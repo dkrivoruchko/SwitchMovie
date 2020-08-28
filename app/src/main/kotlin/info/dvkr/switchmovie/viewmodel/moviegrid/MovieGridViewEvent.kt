@@ -9,5 +9,5 @@ sealed class MovieGridViewEvent : BaseViewModel.Event {
     data class SetMovieStar(val movieId: Long) : MovieGridViewEvent()
     data class UnsetMovieStar(val movieId: Long) : MovieGridViewEvent()
 
-    override fun toString(): String = this::class.java.simpleName
+    override fun toString(): String = this.javaClass.simpleName
 }

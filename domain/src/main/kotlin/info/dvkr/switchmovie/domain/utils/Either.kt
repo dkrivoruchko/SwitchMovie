@@ -26,7 +26,7 @@ sealed class Either<out F : Throwable, out S> {
             }
     }
 
-    inline fun fold(crossinline fnF: (F) -> Any, crossinline fnS: (S) -> Any): Any = when (this) {
+    inline fun <reified T : Any> fold(crossinline fnF: (F) -> T, crossinline fnS: (S) -> T): T = when (this) {
         is Failure -> fnF(exception)
         is Success -> fnS(value)
     }
@@ -47,7 +47,15 @@ sealed class Either<out F : Throwable, out S> {
         }
     }
 
-    inline fun onFailure(fnF: (F) -> Any): Either<F, S> = when (this) {
+    inline fun onFailure(crossinline fnF: (F) -> Any): Either<F, S> = when (this) {
+        is Failure -> {
+            fnF(exception)
+            this
+        }
+        is Success -> this
+    }
+
+    suspend inline fun onFailureSuspend(crossinline fnF: suspend (F) -> Any): Either<F, S> = when (this) {
         is Failure -> {
             fnF(exception)
             this
@@ -64,5 +72,14 @@ inline fun <T, F : Throwable, S> Either<F, S>.flatMap(fn: (S) -> Either<F, T>): 
         is Either.Success -> fn(value)
     }
 
-inline fun <T, F : Throwable, S> Either<F, S>.map(fn: (S) -> (T)): Either<F, T> =
-    this.flatMap { Either.Success(fn(it)) }
+inline fun <T, F : Throwable, S> Either<F, S>.map(fnS: (S) -> (T)): Either<F, T> =
+    when (this) {
+        is Either.Failure -> this
+        is Either.Success -> Either.Success(fnS(value))
+    }
+
+inline fun <T : Throwable, F : Throwable, S> Either<F, S>.mapFailure(fnF: (F) -> (T)): Either<T, S> =
+    when (this) {
+        is Either.Failure -> Either.Failure(fnF(this.exception))
+        is Either.Success -> this
+    }

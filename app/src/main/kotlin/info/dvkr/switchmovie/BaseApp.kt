@@ -4,9 +4,9 @@ import android.app.Application
 import info.dvkr.switchmovie.di.apiKoinModule
 import info.dvkr.switchmovie.di.baseKoinModule
 import org.koin.android.ext.koin.androidContext
-import org.koin.android.ext.koin.androidFileProperties
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.startKoin
+import org.koin.core.logger.Level
 
 abstract class BaseApp : Application() {
     abstract fun initLogger()
@@ -15,9 +15,8 @@ abstract class BaseApp : Application() {
         super.onCreate()
 
         startKoin {
-            androidLogger()
+            androidLogger(Level.ERROR)
             androidContext(this@BaseApp)
-            androidFileProperties()
             modules(listOf(baseKoinModule, apiKoinModule))
         }
 

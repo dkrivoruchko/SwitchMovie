@@ -6,7 +6,9 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import retrofit2.SkipCallbackExecutor
 import retrofit2.http.GET
+import retrofit2.http.Headers
 import retrofit2.http.Query
+import java.time.LocalDate
 
 object MovieApi {
     const val MOVIES_PER_PAGE = 20
@@ -26,7 +28,7 @@ object MovieApi {
             posterPath?.let { apiBaseImageUrl + it } ?: "",
             title,
             overview,
-            releaseDate,
+            LocalDate.parse(releaseDate),
             voteAverage,
             popularity,
             false
@@ -46,8 +48,8 @@ object MovieApi {
     interface Service {
 
         @SkipCallbackExecutor
+        @Headers("Cache-Control: no-cache")
         @GET("movie/now_playing")
-//        @Headers("Cache-Control: private, max-age=600, max-stale=600")
         suspend fun getNowPlaying(
             @Query("api_key") apiKey: String,
             @Query("page") page: Int

@@ -1,11 +1,10 @@
 package info.dvkr.switchmovie.ui.activity
 
-import android.os.Bundle
 import info.dvkr.switchmovie.R
+import info.dvkr.switchmovie.databinding.ActivityAppBinding
+import info.dvkr.switchmovie.helpers.viewBinding
 
-class AppActivity : BaseActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_app)
-    }
+class AppActivity : BaseActivity(R.layout.activity_app) {
+
+    private val binding by viewBinding { activity -> ActivityAppBinding.bind(activity.findViewById(R.id.container)) }
 }

@@ -1,23 +1,19 @@
 package info.dvkr.switchmovie.viewmodel.moviegrid
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Transformations
+import androidx.lifecycle.viewModelScope
 import com.elvishew.xlog.XLog
 import info.dvkr.switchmovie.domain.model.Movie
 import info.dvkr.switchmovie.domain.usecase.MoviesUseCase
 import info.dvkr.switchmovie.domain.utils.getLog
 import info.dvkr.switchmovie.viewmodel.BaseViewModel
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.plus
 import kotlin.properties.Delegates.observable
 
 class MovieGridViewModel(
-    viewModelScope: CoroutineScope,
     private val moviesUseCase: MoviesUseCase
-) : BaseViewModel(viewModelScope) {
+) : BaseViewModel<MovieGridViewModel.MovieGridState>() {
 
     data class MovieGridState(
         val movies: List<Movie> = emptyList(),
@@ -30,7 +26,7 @@ class MovieGridViewModel(
     private sealed class MovieGridViewModelEvent : Event {
         object Init : MovieGridViewModelEvent()
 
-        override fun toString(): String = this::class.java.simpleName
+        override fun toString(): String = this.javaClass.simpleName
     }
 
     override suspend fun onEach(event: Event) {
@@ -38,33 +34,38 @@ class MovieGridViewModel(
 
         when (event) {
             MovieGridViewModelEvent.Init -> {
-                moviesUseCase.getMoviesFlow()
-                    .onEach { movies -> state.update { state.copy(movies = movies) } }
-                    .launchIn(viewModelScope + exceptionHandler)
+                MoviesUseCase.Request.GetMoviesFlow().process(moviesUseCase)
+                    .onSuccess {
+                        it.onEach { movies -> state.update { state.copy(movies = movies) } }
+                            .launchIn(viewModelScope + exceptionHandler) // TODO UNSAFE
+                    }
+                    .onFailure { onError(it) }
             }
 
             MovieGridViewEvent.Refresh -> doWork {
-                moviesUseCase.clearMovies()
+                MoviesUseCase.Request.ClearMovies().process(moviesUseCase)
                 onEvent(MovieGridViewEvent.LoadMore)
             }
 
             MovieGridViewEvent.LoadMore -> doWork {
-                moviesUseCase.loadMoreMovies()
-                    .onFailure { state.update { copy(error = it) } }
+                MoviesUseCase.Request.LoadMoreMoviesAsync().process(moviesUseCase)
+                    .onFailure { onError(it) }
             }
 
             MovieGridViewEvent.Update -> doWork {
-                moviesUseCase.clearOldMovies() // BAD Name
+                MoviesUseCase.Request.ClearOldMovies().process(moviesUseCase)
                 onEvent(MovieGridViewEvent.LoadMore)
             }
 
 
             is MovieGridViewEvent.SetMovieStar -> doWork {
-                moviesUseCase.setMovieStar(event.movieId)
+                MoviesUseCase.Request.SetMovieStarAsync(event.movieId).process(moviesUseCase)
+                    .onFailure { } //TODO
             }
 
             is MovieGridViewEvent.UnsetMovieStar -> doWork {
-                moviesUseCase.unsetMovieStar(event.movieId)
+                MoviesUseCase.Request.ClearMovieStarAsync(event.movieId).process(moviesUseCase)
+                    .onFailure { } //TODO
             }
 
             else -> throw IllegalStateException("MovieGridViewModel: Unknown event: $event")
@@ -79,14 +80,10 @@ class MovieGridViewModel(
         onEvent(MovieGridViewModelEvent.Init)
     }
 
-    fun stateLiveData(): LiveData<MovieGridState> = Transformations.distinctUntilChanged(_stateLiveData)
-
-    private val _stateLiveData = MutableLiveData<MovieGridState>()
-
     private var state: MovieGridState by observable(MovieGridState()) { _, _, newValue ->
         require(newValue.workInProgressCounter >= 0)
         XLog.d(getLog("State", "$newValue"))
-        _stateLiveData.postValue(newValue)
+        stateLiveData.postValue(newValue)
     }
 
     private inline fun MovieGridState.update(crossinline block: MovieGridState.() -> MovieGridState) {

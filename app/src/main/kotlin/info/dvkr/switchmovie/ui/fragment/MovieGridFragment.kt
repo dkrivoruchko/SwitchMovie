@@ -7,21 +7,21 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.content.ContextCompat
-import androidx.fragment.app.Fragment
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.*
-import coil.api.load
+import coil.load
 import com.elvishew.xlog.XLog
 import info.dvkr.switchmovie.R
 import info.dvkr.switchmovie.databinding.FragmentMovieGridBinding
 import info.dvkr.switchmovie.databinding.ItemMovieBinding
 import info.dvkr.switchmovie.domain.model.Movie
 import info.dvkr.switchmovie.domain.utils.getLog
+import info.dvkr.switchmovie.helpers.viewBinding
 import info.dvkr.switchmovie.viewmodel.moviegrid.MovieGridViewEvent
 import info.dvkr.switchmovie.viewmodel.moviegrid.MovieGridViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
-class MovieGridFragment : Fragment() {
+class MovieGridFragment : BaseFragment(R.layout.fragment_movie_grid) {
 
     data class MovieGridViewItem(val id: Long, val posterPath: String, val isStar: Boolean) {
         companion object {
@@ -35,17 +35,10 @@ class MovieGridFragment : Fragment() {
     private var movieAdapter: MovieAdapter? = null
     private var error: Throwable? = null
 
-    private var _binding: FragmentMovieGridBinding? = null
-    private val binding get() = _binding!!
-
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        _binding = FragmentMovieGridBinding.inflate(inflater, container, false)
-        return binding.root
-    }
+    private val binding by viewBinding { fragment -> FragmentMovieGridBinding.bind(fragment.requireView()) }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        XLog.d(getLog("onViewCreated"))
 
         requireActivity().title = getString(R.string.movie_grid_activity_name)
 
@@ -55,7 +48,7 @@ class MovieGridFragment : Fragment() {
         }
             .apply { setHasStableIds(true) }
 
-        with(binding.rvFragmentMovieGrid) {
+        binding.rvFragmentMovieGrid.apply {
             layoutManager = StaggeredGridLayoutManager(4, StaggeredGridLayoutManager.VERTICAL)
             itemAnimator = DefaultItemAnimator()
             adapter = movieAdapter
@@ -68,7 +61,7 @@ class MovieGridFragment : Fragment() {
             })
         }
 
-        viewModel.stateLiveData().observe(viewLifecycleOwner, androidx.lifecycle.Observer { movieGridState ->
+        viewModel.getStateLiveData().observe(viewLifecycleOwner, { movieGridState ->
             XLog.d(getLog("stateLiveData", movieGridState.toString()))
 
             movieAdapter?.submitList(movieGridState.movies.map { MovieGridViewItem.fromMovie(it) })
@@ -83,16 +76,13 @@ class MovieGridFragment : Fragment() {
             }
         })
 
-        binding.srFragmentMovieGrid.setOnRefreshListener {
-            viewModel.onEvent(MovieGridViewEvent.Refresh)
-        }
+        binding.srFragmentMovieGrid.setOnRefreshListener { viewModel.onEvent(MovieGridViewEvent.Refresh) }
 
         viewModel.onEvent(MovieGridViewEvent.Update)
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        _binding = null
         movieAdapter = null
         error = null
     }
@@ -123,8 +113,12 @@ class MovieGridFragment : Fragment() {
         private val onItemStartClick: (MovieGridViewItem) -> Unit
     ) : RecyclerView.ViewHolder(binding.root) {
 
-        private val colorWhite by lazy { ContextCompat.getColor(binding.root.context, R.color.colorWhite) }
-        private val colorAccent by lazy { ContextCompat.getColor(binding.root.context, R.color.colorAccent) }
+        private val colorWhite by lazy(LazyThreadSafetyMode.NONE) {
+            ContextCompat.getColor(binding.root.context, R.color.colorWhite)
+        }
+        private val colorAccent by lazy(LazyThreadSafetyMode.NONE) {
+            ContextCompat.getColor(binding.root.context, R.color.colorAccent)
+        }
 
         fun bind(item: MovieGridViewItem) {
             binding.ibItemMovie.load(item.posterPath)
